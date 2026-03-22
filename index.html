@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="CLIMAS — Smart Indoor Climate & Gas Safety System. Real-time gas detection, temperature monitoring and emergency alerts for your home.">
+<title>CLIMAS — Smart Home Safety System</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky:#0ea5e9;--sky2:#38bdf8;--sky3:#7dd3fc;--sky4:#e0f2fe;--sky5:#f0f9ff;
+  --dark:#0c1a2e;--mid:#475569;--light:#94a3b8;
+  --white:#fff;--off:#f8fafc;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;
+  --head:'Syne',sans-serif;
+  --body:'Plus Jakarta Sans',sans-serif;
+  --mono:'Share Tech Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--dark);font-family:var(--body);overflow-x:hidden}
+.pg{display:none}.pg.active{display:block}
+
+/* ═══ NAV ════════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(14,165,233,.1);
+  height:68px;display:flex;align-items:center;
+  padding:0 60px;justify-content:space-between;
+  transition:box-shadow .3s;
+}
+nav.shadow{box-shadow:0 4px 24px rgba(14,165,233,.09)}
+.nav-logo{
+  font-family:var(--head);font-size:1.3rem;font-weight:800;
+  color:var(--dark);cursor:pointer;
+  display:flex;align-items:center;gap:9px;text-decoration:none;
+}
+.nl-dot{width:10px;height:10px;border-radius:50%;background:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.2)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{
+  font-size:.86rem;font-weight:500;color:var(--mid);
+  text-decoration:none;cursor:pointer;transition:color .2s;
+  position:relative;
+}
+.nav-links a:hover{color:var(--sky)}
+.nav-links a.active-link{color:var(--sky)}
+.nav-links a.active-link::after{
+  content:"";position:absolute;bottom:-4px;left:0;right:0;
+  height:2px;background:var(--sky);border-radius:2px;
+}
+.nav-cta{
+  background:var(--sky);color:#fff;
+  padding:10px 22px;border-radius:8px;
+  font-weight:700;font-size:.86rem;
+  cursor:pointer;border:none;font-family:var(--body);
+  transition:all .2s;text-decoration:none;
+}
+.nav-cta:hover{background:var(--sky2);transform:translateY(-1px);box-shadow:0 6px 18px rgba(14,165,233,.3)}
+.ham{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px}
+.ham span{display:block;width:22px;height:2px;background:var(--dark);border-radius:2px;transition:all .3s}
+.mob-nav{
+  display:none;position:fixed;top:68px;left:0;right:0;
+  background:#fff;border-bottom:1px solid var(--sky4);
+  z-index:499;padding:16px 24px;flex-direction:column;gap:4px;
+}
+.mob-nav.open{display:flex}
+.mob-nav a{
+  padding:12px 0;font-size:.92rem;font-weight:500;
+  color:var(--mid);cursor:pointer;border-bottom:1px solid var(--sky4);
+  text-decoration:none;
+}
+.mob-nav a:last-child{border:none}
+.mob-nav a:hover{color:var(--sky)}
+
+/* ═══ COMMON ═════════════════════════════════════════ */
+.wrap{max-width:1200px;margin:0 auto}
+.section{padding:90px 60px}
+.section.off{background:var(--off)}
+.section.sky{background:var(--sky5)}
+.s-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:.62rem;color:var(--sky);
+  background:var(--sky4);padding:5px 14px;border-radius:20px;
+  letter-spacing:1px;margin-bottom:16px;
+}
+h2{font-family:var(--head);font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;letter-spacing:-1px;line-height:1.1;color:var(--dark);margin-bottom:14px}
+.s-sub{font-size:.97rem;color:var(--mid);line-height:1.75;max-width:520px}
+.fade{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+.fade.in{opacity:1;transform:none}
+.btn-sky{background:var(--sky);color:#fff;padding:13px 28px;border-radius:9px;font-weight:700;font-size:.91rem;cursor:pointer;border:none;font-family:var(--body);transition:all .22s;display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+.btn-sky:hover{background:var(--sky2);transform:translateY(-2px);box-shadow:0 10px 26px rgba(14,165,233,.28)}
+.btn-out{background:transparent;color:var(--sky);padding:13px 26px;border-radius:9px;font-weight:600;font-size:.91rem;cursor:pointer;border:2px solid var(--sky);font-family:var(--body);transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.btn-out:hover{background:var(--sky);color:#fff}
+.cta-band{background:linear-gradient(135deg,var(--sky),var(--sky2));padding:80px 60px;text-align:center;position:relative;overflow:hidden}
+.cta-band h2{color:#fff;margin-bottom:12px}
+.cta-band p{color:rgba(255,255,255,.82);font-size:.97rem;max-width:460px;margin:0 auto 30px;line-height:1.7}
+.btn-white{background:#fff;color:var(--sky);padding:13px 30px;border-radius:9px;font-weight:700;font-size:.92rem;cursor:pointer;border:none;font-family:var(--body);transition:all .2s;text-decoration:none}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+
+/* DEVICE MOCKUP COMPONENT */
+.dev-mock{background:#fff;border-radius:16px;padding:20px;box-shadow:0 16px 48px rgba(14,165,233,.13),0 2px 8px rgba(0,0,0,.05);position:relative}
+.dev-mock::before{content:"";position:absolute;inset:-1px;border-radius:17px;background:linear-gradient(135deg,rgba(14,165,233,.2),transparent,rgba(56,189,248,.1));z-index:-1}
+.dm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.dm-t{font-family:var(--mono);font-size:.62rem;color:var(--sky);letter-spacing:2px}
+.dm-live{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.58rem;color:var(--green)}
+.dm-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.dm-m{background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:12px}
+.dm-lbl{font-family:var(--mono);font-size:.48rem;color:var(--light);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.dm-val{font-family:var(--head);font-size:1.5rem;font-weight:800;color:var(--dark);line-height:1}
+.dm-u{font-size:.75rem;color:var(--light);font-weight:400}
+.dm-gas{background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:12px;margin-bottom:10px}
+.dm-gas-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.dm-safe{font-family:var(--mono);font-size:.52rem;color:var(--green);background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);padding:3px 9px;border-radius:20px}
+.dm-gval{font-family:var(--head);font-size:1.8rem;font-weight:800;color:var(--sky);margin-bottom:7px;line-height:1}
+.dm-bar-bg{background:#e2e8f0;border-radius:4px;height:5px;overflow:hidden}
+.dm-bar{height:100%;width:18%;background:linear-gradient(90deg,var(--sky),var(--sky2));border-radius:4px}
+.dm-weather{background:linear-gradient(135deg,var(--sky4),rgba(14,165,233,.05));border:1px solid rgba(14,165,233,.15);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between}
+.dm-w-city{font-family:var(--mono);font-size:.5rem;color:var(--light);letter-spacing:1px;margin-bottom:3px}
+.dm-w-temp{font-family:var(--head);font-size:1.3rem;font-weight:800;color:var(--sky);line-height:1}
+.dm-w-desc{font-size:.7rem;color:var(--mid);margin-top:3px}
+.dm-w-ico{font-size:1.8rem}
+.dev-v3-tag{position:absolute;top:-11px;right:18px;background:var(--sky);color:#fff;font-family:var(--mono);font-size:.56rem;letter-spacing:2px;padding:4px 12px;border-radius:5px;font-weight:600;box-shadow:0 4px 12px rgba(14,165,233,.3)}
+/* oled */
+.oled{background:#000;border:1px solid #333;border-radius:5px;padding:10px 12px;font-family:var(--mono);font-size:.52rem;color:#0f0;line-height:1.8;text-align:center}
+.oled-title{font-size:.44rem;letter-spacing:2px;margin-bottom:2px}
+
+/* DASHBOARD PREVIEW */
+.dash-frame{background:#fff;border:1px solid var(--sky4);border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(14,165,233,.09)}
+.df-bar{background:var(--sky5);border-bottom:1px solid var(--sky4);padding:11px 16px;display:flex;align-items:center;gap:6px}
+.df-dot{width:9px;height:9px;border-radius:50%}
+.df-url{flex:1;background:#fff;border:1px solid var(--sky4);border-radius:4px;padding:3px 10px;font-family:var(--mono);font-size:.58rem;color:var(--light);margin:0 10px}
+.df-body{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.df-w{background:var(--sky5);border:1px solid var(--sky4);border-radius:8px;padding:11px}
+.df-wl{font-family:var(--mono);font-size:.46rem;color:var(--light);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.df-wv{font-family:var(--head);font-size:1.4rem;font-weight:800;color:var(--dark);line-height:1}
+.df-wu{font-size:.72rem;color:var(--light);font-weight:400}
+.df-ws{font-size:.68rem;color:var(--mid);display:flex;align-items:center;gap:4px;margin-top:4px}
+.df-wdot{width:4px;height:4px;border-radius:50%}
+.df-chart{grid-column:span 2;background:var(--sky5);border:1px solid var(--sky4);border-radius:8px;padding:11px}
+.df-bars{display:flex;align-items:flex-end;gap:2px;height:46px;margin-top:8px}
+.df-bi{flex:1;border-radius:2px 2px 0 0;background:rgba(14,165,233,.35)}
+.df-bi.hi{background:rgba(239,68,68,.55)}
+.df-weather-w{grid-column:span 2;background:linear-gradient(135deg,var(--sky4),rgba(14,165,233,.06));border:1px solid rgba(14,165,233,.15);border-radius:8px;padding:11px;display:flex;align-items:center;justify-content:space-between}
+.dfw-temp{font-family:var(--head);font-size:1.2rem;font-weight:800;color:var(--sky)}
+.dfw-city{font-size:.7rem;color:var(--mid);margin-top:2px}
+.v3-only{font-family:var(--mono);font-size:.5rem;color:var(--sky);letter-spacing:1px}
+
+/* ══════════════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════════════ */
+.hero{
+  min-height:100vh;padding:108px 60px 70px;
+  background:linear-gradient(160deg,var(--sky5) 0%,var(--white) 65%);
+  position:relative;overflow:hidden;display:flex;align-items:center;
+}
+.hero::before{content:"";position:absolute;top:-180px;right:-150px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.07),transparent 70%);pointer-events:none}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;z-index:1}
+.h-pill{display:inline-flex;align-items:center;gap:6px;background:var(--sky4);color:var(--sky);font-family:var(--mono);font-size:.62rem;letter-spacing:1.5px;padding:6px 14px;border-radius:20px;margin-bottom:22px}
+.h-pdot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+h1{font-family:var(--head);font-size:clamp(2.4rem,5vw,3.7rem);font-weight:800;letter-spacing:-1.5px;line-height:1.05;color:var(--dark);margin-bottom:18px}
+h1 em{font-style:normal;color:var(--sky)}
+.hero-p{font-size:1.03rem;color:var(--mid);line-height:1.78;max-width:480px;margin-bottom:34px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border:1px solid var(--sky4);border-radius:12px;overflow:hidden;box-shadow:0 4px 18px rgba(14,165,233,.07)}
+.hst{padding:18px;border-right:1px solid var(--sky4);text-align:center}
+.hst:last-child{border:none}
+.hst-n{font-family:var(--head);font-size:1.5rem;font-weight:800;color:var(--sky);display:block;margin-bottom:3px}
+.hst-l{font-size:.68rem;color:var(--light);letter-spacing:.5px}
+
+/* PRODUCT CARDS on homepage */
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px}
+.pc{background:#fff;border:1px solid var(--sky4);border-radius:18px;overflow:hidden;transition:transform .3s,box-shadow .3s;cursor:pointer}
+.pc:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(14,165,233,.13)}
+.pc.star{border-color:rgba(14,165,233,.3)}
+.pc-img{height:200px;display:flex;align-items:center;justify-content:center;position:relative}
+.pc-img.v2bg{background:linear-gradient(135deg,var(--sky5),var(--sky4))}
+.pc-img.v3bg{background:linear-gradient(135deg,var(--sky4),#bae6fd)}
+.pc-vtag{position:absolute;top:14px;left:14px;font-family:var(--mono);font-size:.56rem;letter-spacing:2px;padding:4px 12px;border-radius:20px;font-weight:600}
+.t-v2{background:var(--sky4);color:var(--sky)}.t-v3{background:rgba(14,165,233,.18);color:var(--sky2)}
+.pc-pop{position:absolute;top:14px;right:14px;background:var(--sky);color:#fff;font-family:var(--mono);font-size:.52rem;letter-spacing:1px;padding:4px 10px;border-radius:20px}
+/* mini mock for product cards */
+.mini-mock{background:#fff;border-radius:8px;padding:10px;box-shadow:0 5px 20px rgba(14,165,233,.13);width:150px;font-family:var(--mono);position:relative}
+.mm-top{display:flex;justify-content:space-between;font-size:.44rem;color:var(--sky);margin-bottom:7px}
+.mm-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px}
+.mm-m{background:var(--sky5);border-radius:4px;padding:6px}
+.mm-l{font-size:.36rem;color:var(--light);letter-spacing:1px;margin-bottom:2px}
+.mm-v{font-family:var(--head);font-size:.85rem;font-weight:800;color:var(--dark);line-height:1}
+.mm-gas{background:var(--sky5);border-radius:4px;padding:6px}
+.mm-oled{position:absolute;top:-8px;right:-8px;background:#000;border:1px solid #333;border-radius:3px;padding:4px 6px;font-size:.3rem;color:#0f0;line-height:1.6}
+.pc-body{padding:22px}
+.pc-name{font-family:var(--head);font-size:1.3rem;font-weight:800;color:var(--dark);margin-bottom:5px}
+.pc-sub{font-size:.83rem;color:var(--mid);line-height:1.5;margin-bottom:16px}
+.pc-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.pf{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--mid)}
+.pf.on{color:var(--dark)}
+.pfd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* FEATURES STRIP */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+.fc{background:#fff;border:1px solid var(--sky4);border-radius:14px;padding:24px;transition:transform .3s,border-color .3s}
+.fc:hover{transform:translateY(-3px);border-color:var(--sky3)}
+.fc-ico{font-size:1.7rem;margin-bottom:12px}
+.fc-t{font-family:var(--head);font-size:.98rem;font-weight:800;color:var(--dark);margin-bottom:7px}
+.fc-p{font-size:.82rem;color:var(--mid);line-height:1.65}
+
+/* HOW IT WORKS STEPS */
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:48px}
+.sc{background:#fff;border:1px solid var(--sky4);border-radius:14px;padding:26px 20px;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s}
+.sc:hover{transform:translateY(-4px);box-shadow:0 14px 36px rgba(14,165,233,.1)}
+.sc::before{content:attr(data-n);position:absolute;top:10px;right:14px;font-family:var(--head);font-size:2.6rem;font-weight:800;color:rgba(14,165,233,.07);line-height:1}
+.sc-ico{font-size:1.8rem;margin-bottom:14px}
+.sc-t{font-family:var(--head);font-size:.97rem;font-weight:800;color:var(--dark);margin-bottom:7px}
+.sc-p{font-size:.82rem;color:var(--mid);line-height:1.6}
+
+/* PRICING */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px;align-items:start}
+.prc{background:#fff;border:1px solid var(--sky4);border-radius:14px;overflow:hidden;transition:transform .3s,box-shadow .3s}
+.prc:hover{transform:translateY(-4px)}
+.prc.hot{border-color:var(--sky);box-shadow:0 10px 36px rgba(14,165,233,.14)}
+.prc-ribbon{background:linear-gradient(90deg,var(--sky),var(--sky2));padding:9px;text-align:center;font-family:var(--mono);font-size:.56rem;letter-spacing:3px;color:#fff;font-weight:600}
+.prc-body{padding:26px}
+.prc-name{font-family:var(--head);font-size:1.2rem;font-weight:800;color:var(--dark);margin-bottom:3px}
+.prc-sub{font-size:.76rem;color:var(--light);margin-bottom:16px}
+.prc-price{display:flex;align-items:baseline;gap:3px;margin-bottom:20px}
+.pp-c{font-size:.82rem;color:var(--light);font-family:var(--mono)}
+.pp-n{font-family:var(--head);font-size:2.6rem;font-weight:800;color:var(--dark);letter-spacing:-2px;line-height:1}
+.pp-p{font-size:.76rem;color:var(--light)}
+.prc-div{height:1px;background:var(--sky4);margin-bottom:16px}
+.prc-feats{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.pfi{display:flex;align-items:center;gap:8px;font-size:.82rem}
+.p-y{color:var(--green)}.p-n{color:#cbd5e1}.p-off{color:#94a3b8}
+.prc-btn{display:block;text-align:center;padding:12px;border-radius:8px;font-weight:700;font-size:.86rem;cursor:pointer;border:none;font-family:var(--body);transition:all .2s;text-decoration:none}
+.pb-free{background:var(--off);color:var(--mid);border:1px solid var(--sky4)}
+.pb-free:hover{border-color:var(--sky);color:var(--sky)}
+.pb-basic{background:var(--sky5);color:var(--sky);border:2px solid var(--sky)}
+.pb-basic:hover{background:var(--sky);color:#fff}
+.pb-pro{background:linear-gradient(135deg,var(--sky),var(--sky2));color:#fff}
+.pb-pro:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 22px rgba(14,165,233,.28)}
+
+/* FAQ */
+.faq-wrap{max-width:680px;margin-top:40px}
+.faq-i{border-bottom:1px solid #e2e8f0}
+.faq-btn{width:100%;background:none;border:none;color:var(--dark);padding:17px 0;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:var(--body);font-size:.9rem;font-weight:500;gap:14px}
+.faq-btn:hover{color:var(--sky)}
+.faq-ico{width:22px;height:22px;border-radius:50%;background:var(--sky4);border:1px solid var(--sky3);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--sky);flex-shrink:0;transition:all .3s}
+.faq-i.open .faq-ico{background:var(--sky);color:#fff;transform:rotate(45deg)}
+.faq-ans{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .3s;font-size:.84rem;color:var(--mid);line-height:1.7}
+.faq-i.open .faq-ans{max-height:220px;padding-bottom:16px}
+
+/* ══════════════════════════════════════════════════════
+   PRODUCT PAGES
+══════════════════════════════════════════════════════ */
+.prod-hero{padding:108px 60px 60px;position:relative;overflow:hidden}
+.ph-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.ph-back{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;color:var(--sky);font-weight:600;cursor:pointer;background:none;border:none;padding:0;font-family:var(--body);margin-bottom:18px;transition:gap .2s}
+.ph-back:hover{gap:10px}
+.ph-ver{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:2px;padding:4px 14px;border-radius:20px;margin-bottom:13px;font-weight:600}
+.ph-title{font-family:var(--head);font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-1.5px;color:var(--dark);margin-bottom:12px;line-height:1.05}
+.ph-p{font-size:.97rem;color:var(--mid);line-height:1.76;margin-bottom:26px}
+.ph-price{background:#fff;border:1px solid var(--sky4);border-radius:12px;padding:13px 18px;margin-bottom:22px;display:flex;align-items:center;gap:14px;box-shadow:0 3px 14px rgba(14,165,233,.07)}
+.php-from{font-family:var(--mono);font-size:.5rem;color:var(--light);letter-spacing:2px;margin-bottom:3px}
+.php-amt{font-family:var(--head);font-size:1.5rem;font-weight:800;color:var(--sky)}
+.php-per{font-size:.75rem;color:var(--light)}
+.ph-btns{display:flex;gap:12px;flex-wrap:wrap}
+
+.prod-detail{padding:80px 60px}
+.pd-2col{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.spec-block{margin-bottom:34px}
+.sb-title{font-family:var(--head);font-size:1.05rem;font-weight:800;color:var(--dark);margin-bottom:14px;padding-bottom:9px;border-bottom:2px solid var(--sky4)}
+.spec-list{display:flex;flex-direction:column;gap:11px}
+.si{display:flex;align-items:flex-start;gap:10px;font-size:.85rem;line-height:1.5}
+.si-ico{flex-shrink:0;margin-top:1px}
+.si-txt{color:var(--mid)}.si-txt strong{color:var(--dark);font-weight:600}
+.incl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:48px}
+.incl-item{background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;font-size:.84rem;font-weight:500;color:var(--dark)}
+.incl-ico{font-size:1.1rem;flex-shrink:0}
+.compat-note{background:var(--sky4);border:1px solid rgba(14,165,233,.2);border-radius:12px;padding:16px 18px;margin-top:18px}
+.compat-lbl{font-family:var(--mono);font-size:.56rem;color:var(--sky);letter-spacing:2px;margin-bottom:6px}
+.compat-txt{font-size:.83rem;color:var(--mid);line-height:1.6}
+
+/* ══════════════════════════════════════════════════════
+   HOW IT WORKS PAGE
+══════════════════════════════════════════════════════ */
+.flow-steps{margin-top:52px;display:flex;flex-direction:column;gap:0}
+.flow-step{display:grid;grid-template-columns:80px 1fr;gap:32px;padding:36px 0;border-bottom:1px solid var(--sky4);align-items:start}
+.flow-step:last-child{border:none}
+.fs-num{font-family:var(--head);font-size:3rem;font-weight:800;color:var(--sky4);line-height:1}
+.fs-right{}
+.fs-title{font-family:var(--head);font-size:1.15rem;font-weight:800;color:var(--dark);margin-bottom:8px}
+.fs-p{font-size:.88rem;color:var(--mid);line-height:1.7;max-width:580px}
+.flow-diagram{background:#fff;border:1px solid var(--sky4);border-radius:16px;padding:32px;margin-top:52px;box-shadow:0 6px 24px rgba(14,165,233,.07)}
+.fd-title{font-family:var(--mono);font-size:.62rem;color:var(--sky);letter-spacing:2px;margin-bottom:24px;text-align:center}
+.fd-flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.fd-node{text-align:center;padding:12px 16px}
+.fd-n-ico{font-size:1.5rem;margin-bottom:6px}
+.fd-n-txt{font-size:.75rem;color:var(--dark);font-weight:600;line-height:1.3}
+.fd-n-sub{font-size:.68rem;color:var(--light);margin-top:2px}
+.fd-arrow{font-size:1rem;color:var(--sky3);margin:0 4px;align-self:center}
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD PAGE
+══════════════════════════════════════════════════════ */
+.dash-page-hero{padding:108px 60px 60px;background:linear-gradient(160deg,var(--sky5),var(--white) 70%)}
+.dash-big{background:#fff;border:1px solid var(--sky4);border-radius:18px;overflow:hidden;box-shadow:0 12px 48px rgba(14,165,233,.1);margin-top:52px}
+.db-topbar{background:var(--sky5);border-bottom:1px solid var(--sky4);padding:13px 20px;display:flex;align-items:center;gap:8px}
+.db-dot{width:10px;height:10px;border-radius:50%}
+.db-url{flex:1;background:#fff;border:1px solid var(--sky4);border-radius:5px;padding:4px 14px;font-family:var(--mono);font-size:.62rem;color:var(--light);margin:0 12px}
+.db-body{padding:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.db-widget{background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:14px}
+.db-wl{font-family:var(--mono);font-size:.48rem;color:var(--light);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+.db-wv{font-family:var(--head);font-size:1.7rem;font-weight:800;color:var(--dark);line-height:1}
+.db-wu{font-size:.78rem;color:var(--light);font-weight:400}
+.db-ws{font-size:.7rem;color:var(--mid);display:flex;align-items:center;gap:4px;margin-top:6px}
+.db-chart{grid-column:span 2;background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:14px}
+.db-bars{display:flex;align-items:flex-end;gap:3px;height:56px;margin-top:10px}
+.db-bi{flex:1;border-radius:2px 2px 0 0;background:rgba(14,165,233,.35)}
+.db-bi.hi{background:rgba(239,68,68,.55)}
+.db-weather{grid-column:span 2;background:linear-gradient(135deg,var(--sky4),rgba(14,165,233,.05));border:1px solid rgba(14,165,233,.15);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between}
+.dbw-temp{font-family:var(--head);font-size:1.8rem;font-weight:800;color:var(--sky);line-height:1}
+.dbw-city{font-size:.76rem;color:var(--mid);margin-top:3px}
+.dbw-ico{font-size:2.5rem}
+.dbw-note{font-family:var(--mono);font-size:.5rem;color:var(--sky);letter-spacing:1px;text-align:right;margin-top:4px}
+.dash-features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+
+/* ══════════════════════════════════════════════════════
+   ABOUT PAGE
+══════════════════════════════════════════════════════ */
+.about-hero{padding:108px 60px 60px;background:linear-gradient(160deg,var(--sky5),var(--white) 70%)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:52px}
+.about-text p{font-size:.93rem;color:var(--mid);line-height:1.8;margin-bottom:16px}
+.about-text p:last-child{margin:0}
+.mission-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:48px}
+.mc{background:var(--sky5);border:1px solid var(--sky4);border-radius:12px;padding:20px}
+.mc-ico{font-size:1.5rem;margin-bottom:10px}
+.mc-t{font-family:var(--head);font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:6px}
+.mc-p{font-size:.82rem;color:var(--mid);line-height:1.6}
+.team-note{background:var(--sky4);border-radius:14px;padding:28px;margin-top:48px}
+.tn-t{font-family:var(--head);font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:10px}
+.tn-p{font-size:.88rem;color:var(--mid);line-height:1.75}
+
+/* ══════════════════════════════════════════════════════
+   CONTACT PAGE
+══════════════════════════════════════════════════════ */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:52px;align-items:start}
+.contact-info{}
+.ci-item{display:flex;align-items:flex-start;gap:14px;margin-bottom:24px}
+.ci-ico{width:44px;height:44px;border-radius:10px;background:var(--sky4);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.ci-title{font-weight:700;font-size:.88rem;color:var(--dark);margin-bottom:3px}
+.ci-val{font-size:.84rem;color:var(--mid);line-height:1.5}
+.ci-val a{color:var(--sky);text-decoration:none}
+.contact-form{background:#fff;border:1px solid var(--sky4);border-radius:16px;padding:28px;box-shadow:0 6px 24px rgba(14,165,233,.07)}
+.cf-title{font-family:var(--head);font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:20px}
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:.72rem;font-weight:600;color:var(--dark);letter-spacing:.3px;margin-bottom:6px}
+.fg input,.fg textarea,.fg select{
+  width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;
+  border-radius:8px;font-size:.86rem;font-family:var(--body);
+  color:var(--dark);outline:none;transition:border-color .2s,box-shadow .2s;
+  background:#fff;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+.fg textarea{resize:vertical;min-height:100px}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--light)}
+.cf-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.send-btn{width:100%;padding:13px;border-radius:9px;background:var(--sky);color:#fff;border:none;font-weight:700;font-size:.9rem;cursor:pointer;font-family:var(--body);transition:all .22s}
+.send-btn:hover{background:var(--sky2);transform:translateY(-1px)}
+.send-success{display:none;text-align:center;padding:20px 0}
+.ss-ico{font-size:2.5rem;margin-bottom:10px}
+.ss-t{font-family:var(--head);font-size:1.1rem;font-weight:800;color:var(--green);margin-bottom:6px}
+.ss-p{font-size:.84rem;color:var(--mid)}
+
+/* ══════════════════════════════════════════════════════
+   STORE PAGE
+══════════════════════════════════════════════════════ */
+.store-hero{padding:108px 60px 50px;background:linear-gradient(160deg,var(--sky5),var(--white) 70%);text-align:center;position:relative;overflow:hidden}
+.store-hero::before{content:"";position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:700px;height:400px;border-radius:50%;background:radial-gradient(ellipse,rgba(14,165,233,.07),transparent 70%)}
+.store-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:52px}
+.stc{background:#fff;border:1px solid var(--sky4);border-radius:18px;overflow:hidden;transition:transform .3s,box-shadow .3s}
+.stc:hover{transform:translateY(-4px);box-shadow:0 18px 48px rgba(14,165,233,.13)}
+.stc.star{border-color:rgba(14,165,233,.35);box-shadow:0 6px 28px rgba(14,165,233,.1)}
+.stc-img{height:210px;display:flex;align-items:center;justify-content:center;position:relative}
+.stc-img.v2b{background:linear-gradient(135deg,var(--sky5),var(--sky4))}
+.stc-img.v3b{background:linear-gradient(135deg,var(--sky4),#bae6fd)}
+.stc-vtag{position:absolute;top:14px;left:14px;font-family:var(--mono);font-size:.56rem;letter-spacing:2px;padding:4px 12px;border-radius:20px;font-weight:600}
+.stc-pop{position:absolute;top:14px;right:14px;background:var(--sky);color:#fff;font-family:var(--mono);font-size:.52rem;letter-spacing:1px;padding:4px 10px;border-radius:20px}
+.stc-body{padding:22px}
+.stc-name{font-family:var(--head);font-size:1.25rem;font-weight:800;color:var(--dark);margin-bottom:4px}
+.stc-sub{font-size:.83rem;color:var(--mid);line-height:1.5;margin-bottom:15px}
+.stc-price{display:flex;align-items:center;justify-content:space-between;background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.stp-l .stp-lbl{font-family:var(--mono);font-size:.48rem;color:var(--light);letter-spacing:2px;margin-bottom:2px}
+.stp-l .stp-amt{font-family:var(--head);font-size:1.4rem;font-weight:800;color:var(--dark)}
+.stp-r{text-align:right;font-size:.75rem;color:var(--mid)}
+.stp-r strong{color:var(--sky)}
+.stc-feats{display:flex;flex-direction:column;gap:6px;margin-bottom:17px}
+.stf{display:flex;align-items:center;gap:7px;font-size:.81rem;color:var(--mid)}
+.stf.on{color:var(--dark)}
+.stfd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.stc-btn{width:100%;padding:13px;border-radius:9px;border:none;font-weight:700;font-size:.9rem;cursor:pointer;font-family:var(--body);transition:all .22s;display:flex;align-items:center;justify-content:center;gap:7px}
+.stb-sky{background:var(--sky);color:#fff}
+.stb-sky:hover{background:var(--sky2);transform:translateY(-1px);box-shadow:0 8px 22px rgba(14,165,233,.28)}
+.stb-out{background:transparent;color:var(--sky);border:2px solid var(--sky)}
+.stb-out:hover{background:var(--sky);color:#fff}
+.ship-note{background:var(--sky5);border:1px solid var(--sky4);border-radius:12px;padding:15px 18px;display:flex;align-items:flex-start;gap:11px;margin-top:28px}
+.ship-ico{font-size:1.2rem;flex-shrink:0;margin-top:1px}
+.ship-t{font-weight:600;font-size:.86rem;color:var(--dark);margin-bottom:3px}
+.ship-p{font-size:.81rem;color:var(--mid);line-height:1.6}
+
+/* ══════════════════════════════════════════════════════
+   ORDER MODAL
+══════════════════════════════════════════════════════ */
+.modal-bg{position:fixed;inset:0;z-index:600;background:rgba(12,26,46,.65);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2);animation:mIn .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(18px)}to{opacity:1;transform:none}}
+.modal-head{padding:22px 26px 18px;border-bottom:1px solid var(--sky4);display:flex;align-items:center;justify-content:space-between}
+.mh-t{font-family:var(--head);font-size:1.1rem;font-weight:800;color:var(--dark)}
+.mh-s{font-size:.76rem;color:var(--light);margin-top:2px}
+.m-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--sky4);background:var(--off);cursor:pointer;font-size:.95rem;color:var(--mid);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.m-close:hover{background:var(--sky4);color:var(--sky)}
+.modal-body{padding:22px 26px}
+.order-sum{background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:13px 15px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.os-n{font-family:var(--head);font-size:.97rem;font-weight:800;color:var(--dark)}
+.os-d{font-size:.76rem;color:var(--mid);margin-top:2px}
+.os-p{font-family:var(--head);font-size:1.15rem;font-weight:800;color:var(--sky)}
+.mfg{margin-bottom:14px}
+.mfg label{display:block;font-size:.7rem;font-weight:600;color:var(--dark);letter-spacing:.3px;margin-bottom:5px}
+.mfg input,.mfg select{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;font-family:var(--body);color:var(--dark);outline:none;transition:border-color .2s,box-shadow .2s;background:#fff}
+.mfg input:focus,.mfg select:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+.mfg input::placeholder{color:var(--light)}
+.mfg input.err,.mfg select.err{border-color:var(--red)}
+.m2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qty-row{display:flex;align-items:center;gap:9px}
+.qty-btn{width:34px;height:34px;border-radius:7px;border:1.5px solid #e2e8f0;background:#fff;font-size:1rem;cursor:pointer;color:var(--dark);display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:var(--body)}
+.qty-btn:hover{border-color:var(--sky);color:var(--sky)}
+.qty-v{font-family:var(--head);font-size:1.1rem;font-weight:800;color:var(--dark);min-width:26px;text-align:center}
+.order-total{background:linear-gradient(135deg,var(--sky5),rgba(14,165,233,.06));border:1px solid rgba(14,165,233,.15);border-radius:10px;padding:13px 15px;margin:18px 0;display:flex;align-items:center;justify-content:space-between}
+.ot-l{font-size:.82rem;color:var(--mid);font-weight:500}
+.ot-v{font-family:var(--head);font-size:1.35rem;font-weight:800;color:var(--sky)}
+.m-note{font-size:.73rem;color:var(--light);line-height:1.6;margin-bottom:13px}
+.place-btn{width:100%;padding:14px;border-radius:9px;background:linear-gradient(135deg,var(--sky),var(--sky2));color:#fff;border:none;cursor:pointer;font-weight:700;font-size:.93rem;font-family:var(--body);transition:all .22s}
+.place-btn:hover{opacity:.93;transform:translateY(-1px);box-shadow:0 8px 26px rgba(14,165,233,.3)}
+.place-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.order-ok{padding:40px 26px;text-align:center}
+.ok-ico{font-size:3.2rem;margin-bottom:14px}
+.ok-t{font-family:var(--head);font-size:1.35rem;font-weight:800;color:var(--dark);margin-bottom:8px}
+.ok-p{font-size:.88rem;color:var(--mid);line-height:1.7;max-width:360px;margin:0 auto 18px}
+.ok-ref{background:var(--sky5);border:1px solid var(--sky4);border-radius:9px;padding:11px 15px;font-family:var(--mono);font-size:.68rem;color:var(--sky);letter-spacing:1px;margin-bottom:16px}
+.ok-close{background:var(--sky);color:#fff;border:none;padding:11px 26px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.88rem;font-family:var(--body)}
+
+/* ══════════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════════ */
+footer{background:var(--dark);padding:60px}
+.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.ft-brand .fl{font-family:var(--head);font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:10px}
+.ft-brand p{font-size:.82rem;color:rgba(255,255,255,.38);line-height:1.65;max-width:240px}
+.ft-col h4{font-family:var(--mono);font-size:.56rem;color:rgba(255,255,255,.28);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+.ft-col a{display:block;font-size:.82rem;color:rgba(255,255,255,.48);text-decoration:none;margin-bottom:9px;cursor:pointer;transition:color .2s}
+.ft-col a:hover{color:#fff}
+.ft-bot{border-top:1px solid rgba(255,255,255,.07);padding-top:22px;display:flex;align-items:center;justify-content:space-between;font-size:.73rem;color:rgba(255,255,255,.22)}
+
+/* ═══ MOBILE ═══════════════════════════════════════════ */
+@media(max-width:960px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .ham{display:flex}
+  .hero{padding:90px 20px 50px}
+  .hero-inner{grid-template-columns:1fr}
+  .hero-right-col{display:none}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .section{padding:60px 20px}
+  .steps-grid,.prod-grid,.price-grid,.feat-grid,.dash-features{grid-template-columns:1fr}
+  .pd-2col,.ph-inner,.about-grid,.contact-grid,.store-grid{grid-template-columns:1fr}
+  .prod-hero,.prod-detail,.dash-page-hero,.about-hero,.store-hero,.contact-hero{padding-left:20px;padding-right:20px}
+  .prod-detail,.prod-hero,.about-hero,.dash-page-hero{padding-top:90px}
+  .db-body{grid-template-columns:1fr 1fr}
+  .incl-grid,.mission-cards,.m2col,.cf-2col{grid-template-columns:1fr}
+  .ft-grid{grid-template-columns:1fr 1fr}
+  .ft-bot{flex-direction:column;gap:8px;text-align:center}
+  footer{padding:40px 20px}
+  .cta-band{padding:60px 20px}
+  .flow-step{grid-template-columns:50px 1fr;gap:16px}
+  .fd-flow{justify-content:flex-start;overflow-x:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ══════════════════════════════════════════ -->
+<nav id="nav">
+  <a class="nav-logo" onclick="go('home')"><div class="nl-dot"></div>CLIMAS</a>
+  <div class="nav-links" id="navLinks">
+    <a onclick="go('home')" id="nl-home">Home</a>
+    <a onclick="go('howitworks')" id="nl-howitworks">How It Works</a>
+    <a onclick="go('dashboard')" id="nl-dashboard">Dashboard</a>
+    <a onclick="go('store')" id="nl-store">Store</a>
+    <a onclick="go('about')" id="nl-about">About</a>
+    <a onclick="go('contact')" id="nl-contact">Contact</a>
+  </div>
+  <button class="nav-cta" onclick="location.href='/app'">Get Started →</button>
+  <button class="ham" id="ham" onclick="toggleMob()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mob-nav" id="mobNav">
+  <a onclick="go('home');toggleMob()">Home</a>
+  <a onclick="go('howitworks');toggleMob()">How It Works</a>
+  <a onclick="go('dashboard');toggleMob()">Dashboard</a>
+  <a onclick="go('store');toggleMob()">Store</a>
+  <a onclick="go('about');toggleMob()">About</a>
+  <a onclick="go('contact');toggleMob()">Contact</a>
+  <a onclick="location.href='/app'" style="color:var(--sky);font-weight:700">Get Started →</a>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     HOME
+════════════════════════════════════════════════════ -->
+<div class="pg active" id="pg-home">
+
+  <section class="hero">
+    <div class="wrap" style="width:100%">
+      <div class="hero-inner">
+        <div class="hero-left-col">
+          <div class="h-pill"><span class="h-pdot"></span>SMART HOME SAFETY SYSTEM</div>
+          <h1>Protect your home<br>from <em>gas leaks</em><br>— 24/7.</h1>
+          <p class="hero-p">CLIMAS monitors gas levels, temperature and humidity in your home in real time. The moment danger is detected — it alerts you instantly, wherever you are.</p>
+          <div class="hero-btns">
+            <button class="btn-sky" onclick="go('store')">Pre-order Now →</button>
+            <button class="btn-out" onclick="go('howitworks')">How It Works</button>
+          </div>
+          <div class="hero-stats">
+            <div class="hst"><span class="hst-n">5s</span><span class="hst-l">Update speed</span></div>
+            <div class="hst"><span class="hst-n">8s</span><span class="hst-l">Alarm to call</span></div>
+            <div class="hst"><span class="hst-n">24/7</span><span class="hst-l">Monitoring</span></div>
+            <div class="hst"><span class="hst-n">FREE</span><span class="hst-l">Device cost</span></div>
+            <div class="hst"><span class="hst-n">GHS 18</span><span class="hst-l">v2 sub from/mo</span></div>
+          </div>
+        </div>
+        <div class="hero-right-col fade">
+          <div style="position:relative">
+            <div class="dev-v3-tag">CLIMAS v3</div>
+            <div class="dev-mock">
+              <div class="dm-head"><span class="dm-t">LIVE DASHBOARD</span><span class="dm-live"><span class="dm-dot"></span>LIVE</span></div>
+              <div class="dm-grid">
+                <div class="dm-m"><div class="dm-lbl">Temperature</div><div class="dm-val">32<span class="dm-u">°C</span></div></div>
+                <div class="dm-m"><div class="dm-lbl">Humidity</div><div class="dm-val">61<span class="dm-u">%</span></div></div>
+              </div>
+              <div class="dm-gas">
+                <div class="dm-gas-top"><span class="dm-lbl">Gas Level</span><span class="dm-safe">● SAFE</span></div>
+                <div class="dm-gval">183</div>
+                <div class="dm-bar-bg"><div class="dm-bar"></div></div>
+              </div>
+              <div class="dm-weather">
+                <div><div class="dm-w-city">KUMASI, GH</div><div class="dm-w-temp">28°C</div><div class="dm-w-desc">Partly Cloudy</div></div>
+                <div class="dm-w-ico">⛅</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUR PRODUCTS -->
+  <section class="section off">
+    <div class="wrap">
+      <div class="s-tag">Our Products</div>
+      <h2 class="fade">Two versions. One mission.</h2>
+      <p class="s-sub fade">Both CLIMAS devices protect your home 24/7. Choose the model that fits your needs.</p>
+      <div class="prod-grid">
+        <div class="pc fade" onclick="go('v2')">
+          <div class="pc-img v2bg">
+            <div class="pc-vtag t-v2">CLIMAS v2</div>
+            <div class="mini-mock">
+              <div class="mm-top"><span>CLIMAS v2</span><span style="color:var(--green)">● LIVE</span></div>
+              <div class="mm-row">
+                <div class="mm-m"><div class="mm-l">TEMP</div><div class="mm-v">32°C</div></div>
+                <div class="mm-m"><div class="mm-l">HUM</div><div class="mm-v">61%</div></div>
+              </div>
+              <div class="mm-gas"><div class="mm-l">GAS LEVEL</div><div class="mm-v" style="color:var(--sky)">183 SAFE</div></div>
+            </div>
+          </div>
+          <div class="pc-body">
+            <div class="pc-name">CLIMAS v2</div>
+            <div class="pc-sub">Monitors your home from the cloud. All readings on your phone — small, quiet and always watching.</div>
+            <div class="pc-feats">
+              <div class="pf on"><div class="pfd" style="background:var(--sky)"></div>Real-time gas detection</div>
+              <div class="pf on"><div class="pfd" style="background:var(--sky)"></div>Temperature & humidity</div>
+              <div class="pf on"><div class="pfd" style="background:var(--sky)"></div>Web dashboard</div>
+              <div class="pf on"><div class="pfd" style="background:var(--sky)"></div>Push notifications</div>
+              <div class="pf"><div class="pfd" style="background:#e2e8f0"></div><span style="color:var(--light)">No on-device screen</span></div>
+            </div>
+            <button class="btn-sky" onclick="event.stopPropagation();go('v2')">Learn More →</button>
+          </div>
+        </div>
+        <div class="pc star fade" onclick="go('v3')">
+          <div class="pc-img v3bg">
+            <div class="pc-vtag t-v3">CLIMAS v3</div>
+            <div class="pc-pop">MOST POPULAR</div>
+            <div class="mini-mock" style="position:relative">
+              <div class="mm-top"><span>CLIMAS v3</span><span style="color:var(--green)">● LIVE</span></div>
+              <div class="mm-row">
+                <div class="mm-m"><div class="mm-l">TEMP</div><div class="mm-v">32°C</div></div>
+                <div class="mm-m"><div class="mm-l">HUM</div><div class="mm-v">61%</div></div>
+              </div>
+              <div class="mm-gas"><div class="mm-l">GAS LEVEL</div><div class="mm-v" style="color:var(--sky)">183 SAFE</div></div>
+              <div class="mm-oled">CLIMAS v3<br>T:32 H:61%<br>GAS:183 OK<br>KSI:28C ⛅</div>
+            </div>
+          </div>
+          <div class="pc-body">
+            <div class="pc-name">CLIMAS v3</div>
+            <div class="pc-sub">OLED screen on the device — always visible. OpenWeather and emergency call on Pro.</div>
+            <div class="pc-feats">
+              <div class="pf on"><div class="pfd" style="background:var(--sky)"></div>Everything in v2</div>
+              <div class="pf on"><div class="pfd" style="background:var(--green)"></div>OLED display — always on</div>
+              <div class="pf"><div class="pfd" style="background:#e2e8f0"></div><span style="color:var(--light)">OpenWeather — Pro only</span></div>
+              <div class="pf"><div class="pfd" style="background:#e2e8f0"></div><span style="color:var(--light)">Emergency call — Pro only</span></div>
+            </div>
+            <button class="btn-sky" onclick="event.stopPropagation();go('v3')">Learn More →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY FEATURES -->
+  <section class="section sky">
+    <div class="wrap">
+      <div class="s-tag">Features</div>
+      <h2 class="fade">Everything your home needs.</h2>
+      <div class="feat-grid">
+        <div class="fc fade"><div class="fc-ico">🔥</div><div class="fc-t">Gas Leak Detection</div><div class="fc-p">Continuously monitors for dangerous gas including LPG, carbon monoxide and methane. The alarm fires the moment unsafe levels are detected.</div></div>
+        <div class="fc fade"><div class="fc-ico">🌡️</div><div class="fc-t">Climate Monitoring</div><div class="fc-p">Tracks indoor temperature and humidity in real time. All readings saved to your cloud history.</div></div>
+        <div class="fc fade"><div class="fc-ico">📱</div><div class="fc-t">Phone Dashboard</div><div class="fc-p">Install the CLIMAS web app on any iPhone or Android. Live readings and alert history in your pocket.</div></div>
+        <div class="fc fade"><div class="fc-ico">🔔</div><div class="fc-t">Instant Alerts</div><div class="fc-p">Gas alarm fires? An audible alarm sounds and your phone gets a push notification immediately.</div></div>
+        <div class="fc fade"><div class="fc-ico">📞</div><div class="fc-t">Emergency Call</div><div class="fc-p">Gas stays dangerous for 8 seconds? CLIMAS calls your emergency contact automatically. Pro plan.</div></div>
+        <div class="fc fade"><div class="fc-ico">⛅</div><div class="fc-t">Live Weather — Pro</div><div class="fc-p">Get live outdoor weather from OpenWeather on your dashboard and — on v3 — directly on the OLED screen. Pro plan for both v2 and v3.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING PREVIEW -->
+  <section class="section">
+    <div class="wrap">
+      <div class="s-tag">Pricing</div>
+      <h2 class="fade">Simple, honest pricing.</h2>
+      <p class="s-sub fade">Your device is free. Pay monthly for cloud features — cancel any time. Pricing varies by model.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;margin-bottom:10px;max-width:700px">
+        <div style="background:var(--sky4);border-radius:8px;padding:9px 14px;font-family:var(--mono);font-size:.58rem;color:var(--sky);letter-spacing:1px;text-align:center">CLIMAS v2</div>
+        <div style="background:linear-gradient(135deg,var(--sky4),#bae6fd);border-radius:8px;padding:9px 14px;font-family:var(--mono);font-size:.58rem;color:var(--sky);letter-spacing:1px;text-align:center">CLIMAS v3 — with OLED</div>
+      </div>
+      <div class="price-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;max-width:780px;gap:12px">
+        <!-- v2 Basic -->
+        <div class="prc fade">
+          <div class="prc-body">
+            <div class="prc-name" style="font-size:1rem">Basic</div>
+            <div class="prc-price"><span class="pp-c">GHS</span><span class="pp-n" style="color:var(--sky);font-size:2rem">18</span><span class="pp-p">/mo</span></div>
+            <div class="prc-div"></div>
+            <div class="prc-feats">
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Web dashboard</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Push notifications</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-n">—</span><span class="p-off">OpenWeather</span></div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-n">—</span><span class="p-off">Emerg. call</span></div>
+            </div>
+            <button class="prc-btn pb-basic" style="font-size:.78rem;padding:9px" onclick="location.href='/app'">Get Basic</button>
+          </div>
+        </div>
+        <!-- v2 Pro -->
+        <div class="prc hot fade">
+          <div class="prc-ribbon" style="font-size:.48rem">POPULAR</div>
+          <div class="prc-body">
+            <div class="prc-name" style="font-size:1rem">Pro</div>
+            <div class="prc-price"><span class="pp-c">GHS</span><span class="pp-n" style="color:var(--sky);font-size:2rem">38</span><span class="pp-p">/mo</span></div>
+            <div class="prc-div"></div>
+            <div class="prc-feats">
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Web dashboard</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Push notifications</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> OpenWeather</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Emerg. call</div>
+            </div>
+            <button class="prc-btn pb-pro" style="font-size:.78rem;padding:9px" onclick="location.href='/app'">Get Pro</button>
+          </div>
+        </div>
+        <!-- v3 Basic -->
+        <div class="prc fade">
+          <div class="prc-body">
+            <div class="prc-name" style="font-size:1rem">Basic</div>
+            <div class="prc-price"><span class="pp-c">GHS</span><span class="pp-n" style="color:var(--sky);font-size:2rem">28</span><span class="pp-p">/mo</span></div>
+            <div class="prc-div"></div>
+            <div class="prc-feats">
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Web dashboard</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Push notifications</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> OLED display</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-n">—</span><span class="p-off">OpenWeather</span></div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-n">—</span><span class="p-off">Emerg. call</span></div>
+            </div>
+            <button class="prc-btn pb-basic" style="font-size:.78rem;padding:9px" onclick="location.href='/app'">Get Basic</button>
+          </div>
+        </div>
+        <!-- v3 Pro -->
+        <div class="prc hot fade">
+          <div class="prc-ribbon" style="font-size:.48rem">POPULAR</div>
+          <div class="prc-body">
+            <div class="prc-name" style="font-size:1rem">Pro</div>
+            <div class="prc-price"><span class="pp-c">GHS</span><span class="pp-n" style="color:var(--sky);font-size:2rem">48</span><span class="pp-p">/mo</span></div>
+            <div class="prc-div"></div>
+            <div class="prc-feats">
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Web dashboard</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Push notifications</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> OLED display</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> OpenWeather</div>
+              <div class="pfi" style="font-size:.76rem"><span class="p-y">✓</span> Emerg. call</div>
+            </div>
+            <button class="prc-btn pb-pro" style="font-size:.78rem;padding:9px" onclick="location.href='/app'">Get Pro</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <div class="s-tag" style="background:rgba(255,255,255,.2);color:#fff;justify-content:center;margin:0 auto 14px">Get Started</div>
+      <h2>Your home is worth protecting.</h2>
+      <p>Pre-order your CLIMAS device today. Setup takes under 5 minutes.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-white" onclick="go('store')">Pre-order Now →</button>
+        <button onclick="location.href='/app'" style="background:rgba(255,255,255,.15);color:#fff;padding:13px 26px;border-radius:9px;font-weight:600;font-size:.91rem;cursor:pointer;border:2px solid rgba(255,255,255,.3);font-family:var(--body);transition:all .2s">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CLIMAS v2 PAGE
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-v2">
+  <div class="prod-hero" style="background:linear-gradient(160deg,var(--sky5),var(--white) 70%)">
+    <div class="wrap">
+      <div class="ph-inner">
+        <div>
+          <button class="ph-back" onclick="go('home')">← Back</button>
+          <div class="ph-ver t-v2">CLIMAS v2</div>
+          <h1 class="ph-title">CLIMAS v2<br><span style="color:var(--sky)">Cloud-First Safety Monitor</span></h1>
+          <p class="ph-p">Everything is on your phone. CLIMAS v2 continuously monitors your home for gas leaks, temperature changes and humidity — sending you instant alerts the moment anything is dangerous.</p>
+          <div class="ph-price">
+            <div><div class="php-from">DEVICE</div><div class="php-amt" style="color:var(--green)">FREE</div></div>
+            <div style="border-left:1px solid var(--sky4);padding-left:14px">
+              <div class="php-from">SUBSCRIPTION</div>
+              <div style="display:flex;gap:10px;align-items:baseline">
+                <div><div style="font-family:var(--mono);font-size:.44rem;color:var(--light);letter-spacing:1px">BASIC</div><div class="php-amt">GHS 18<span class="php-per">/mo</span></div></div>
+                <div style="color:var(--sky4);font-size:.8rem">·</div>
+                <div><div style="font-family:var(--mono);font-size:.44rem;color:var(--light);letter-spacing:1px">PRO</div><div class="php-amt">GHS 38<span class="php-per">/mo</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ph-btns">
+            <button class="btn-sky" onclick="openOrder('v2')">Pre-order CLIMAS v2 →</button>
+            <button class="btn-out" onclick="location.href='/app'">Create Account</button>
+          </div>
+        </div>
+        <div>
+          <div class="dev-mock" style="max-width:320px;margin-left:auto">
+            <div class="dm-head"><span class="dm-t">CLIMAS v2 — DASHBOARD</span><span class="dm-live"><span class="dm-dot"></span>LIVE</span></div>
+            <div class="dm-grid">
+              <div class="dm-m"><div class="dm-lbl">Temperature</div><div class="dm-val">32<span class="dm-u">°C</span></div></div>
+              <div class="dm-m"><div class="dm-lbl">Humidity</div><div class="dm-val">61<span class="dm-u">%</span></div></div>
+            </div>
+            <div class="dm-gas">
+              <div class="dm-gas-top"><span class="dm-lbl">Gas Level</span><span class="dm-safe">● SAFE</span></div>
+              <div class="dm-gval">183</div>
+              <div class="dm-bar-bg"><div class="dm-bar"></div></div>
+            </div>
+            <div style="background:var(--sky5);border:1px solid var(--sky4);border-radius:10px;padding:12px;margin-top:10px;text-align:center">
+              <div style="font-family:var(--mono);font-size:.5rem;color:var(--light);letter-spacing:2px;margin-bottom:5px">INSTALL ON YOUR PHONE</div>
+              <div style="font-size:.8rem;color:var(--mid)">Safari / Chrome → Add to Home Screen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="prod-detail">
+    <div class="wrap">
+      <div class="pd-2col">
+        <div>
+          <div class="spec-block">
+            <div class="sb-title">What CLIMAS v2 Does</div>
+            <div class="spec-list">
+              <div class="si"><div class="si-ico">🔥</div><div class="si-txt"><strong>Gas Detection —</strong> Continuously monitors for LPG, carbon monoxide and methane 24/7. The moment concentration exceeds the safety threshold, an audible alarm sounds and your phone is notified.</div></div>
+              <div class="si"><div class="si-ico">🌡️</div><div class="si-txt"><strong>Temperature & Humidity —</strong> Tracks your indoor climate in real time. All readings are stored in the cloud for history and trend analysis.</div></div>
+              <div class="si"><div class="si-ico">📱</div><div class="si-txt"><strong>Phone Dashboard —</strong> Access live readings, gas history charts and alert logs from any phone. Install as a home screen app on iOS or Android in seconds.</div></div>
+              <div class="si"><div class="si-ico">🔔</div><div class="si-txt"><strong>Instant Push Notifications —</strong> Gas alarm fires? Your phone is notified immediately — even when the app is closed. Never miss a critical alert.</div></div>
+              <div class="si"><div class="si-ico">📞</div><div class="si-txt"><strong>Emergency Call (Pro) —</strong> If gas stays at dangerous levels for 8 seconds, CLIMAS places an automated voice call to your emergency contact.</div></div>
+              <div class="si"><div class="si-ico">🍳</div><div class="si-txt"><strong>Kitchen Mode —</strong> Hold the button to pause gas monitoring while cooking. Prevents false alarms during normal kitchen use.</div></div>
+            </div>
+          </div>
+          <div class="spec-block">
+            <div class="sb-title">Ideal Locations</div>
+            <div class="spec-list">
+              <div class="si"><div class="si-ico">🏠</div><div class="si-txt">Kitchens and cooking areas where gas leaks are most common</div></div>
+              <div class="si"><div class="si-ico">🏢</div><div class="si-txt">Apartments, student dormitories and enclosed spaces</div></div>
+              <div class="si"><div class="si-ico">🔧</div><div class="si-txt">Workshops and indoor work areas with fuel-powered equipment</div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="dash-frame">
+            <div class="df-bar">
+              <div class="df-dot" style="background:#ff5f57"></div>
+              <div class="df-dot" style="background:#ffbd2e"></div>
+              <div class="df-dot" style="background:#28ca41"></div>
+              <div class="df-url">climasv3.com/dashboard</div>
+            </div>
+            <div class="df-body">
+              <div class="df-w"><div class="df-wl">Temp</div><div class="df-wv">32<span class="df-wu">°C</span></div><div class="df-ws"><div class="df-wdot" style="background:var(--green)"></div>Normal</div></div>
+              <div class="df-w"><div class="df-wl">Humidity</div><div class="df-wv">61<span class="df-wu">%</span></div><div class="df-ws"><div class="df-wdot" style="background:var(--green)"></div>Good</div></div>
+              <div class="df-w"><div class="df-wl">Gas Level</div><div class="df-wv" style="color:var(--sky)">183</div><div class="df-ws"><div class="df-wdot" style="background:var(--green)"></div>Safe</div></div>
+              <div class="df-w"><div class="df-wl">Status</div><div class="df-wv" style="font-size:1rem;color:var(--green)">LIVE</div><div class="df-ws"><div class="df-wdot" style="background:var(--green);animation:pulse 1.5s infinite"></div>Connected</div></div>
+              <div class="df-chart">
+                <div class="df-wl">Gas History</div>
+                <div class="df-bars">
+                  <div class="df-bi" style="height:15%"></div><div class="df-bi" style="height:20%"></div><div class="df-bi" style="height:18%"></div>
+                  <div class="df-bi" style="height:22%"></div><div class="df-bi" style="height:16%"></div><div class="df-bi" style="height:19%"></div>
+                  <div class="df-bi" style="height:24%"></div><div class="df-bi hi" style="height:82%"></div>
+                  <div class="df-bi hi" style="height:88%"></div><div class="df-bi" style="height:21%"></div>
+                  <div class="df-bi" style="height:17%"></div><div class="df-bi" style="height:20%;background:var(--sky)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="compat-note">
+            <div class="compat-lbl">SUBSCRIPTION PLANS</div>
+            <div class="compat-txt"><strong>Basic (GHS 18/mo)</strong> — web dashboard, push notifications. <strong>Pro (GHS 38/mo)</strong> — adds OpenWeather and auto emergency call. Each subscription covers 1 device.</div>
+          </div>
+          <div class="incl-grid" style="margin-top:20px">
+            <div class="incl-item"><span class="incl-ico">📦</span>CLIMAS v2 device</div>
+            <div class="incl-item"><span class="incl-ico">🔌</span>USB power cable</div>
+            <div class="incl-item"><span class="incl-ico">📄</span>Quick start guide</div>
+            <div class="incl-item"><span class="incl-ico">🔑</span>Activation token by email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <h2>Ready to protect your home?</h2>
+      <p>Pre-order CLIMAS v2, create your account and be monitoring in minutes.</p>
+      <button class="btn-white" onclick="openOrder('v2')">Pre-order CLIMAS v2 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CLIMAS v3 PAGE
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-v3">
+  <div class="prod-hero" style="background:linear-gradient(160deg,#e0f2fe,var(--white) 70%)">
+    <div class="wrap">
+      <div class="ph-inner">
+        <div>
+          <button class="ph-back" onclick="go('home')">← Back</button>
+          <div class="ph-ver t-v3">CLIMAS v3</div>
+          <h1 class="ph-title">CLIMAS v3<br><span style="color:var(--sky)">Full Display Safety Monitor</span></h1>
+          <p class="ph-p">Everything CLIMAS v2 does — plus an OLED display on the device showing live readings at all times. Upgrade to Pro and also get live outdoor weather from OpenWeather on both the OLED and your dashboard.</p>
+          <div class="ph-price">
+            <div><div class="php-from">DEVICE</div><div class="php-amt" style="color:var(--green)">FREE</div></div>
+            <div style="border-left:1px solid var(--sky4);padding-left:14px">
+              <div class="php-from">SUBSCRIPTION</div>
+              <div style="display:flex;gap:10px;align-items:baseline">
+                <div><div style="font-family:var(--mono);font-size:.44rem;color:var(--light);letter-spacing:1px">BASIC</div><div class="php-amt">GHS 28<span class="php-per">/mo</span></div></div>
+                <div style="color:var(--sky4);font-size:.8rem">·</div>
+                <div><div style="font-family:var(--mono);font-size:.44rem;color:var(--light);letter-spacing:1px">PRO</div><div class="php-amt">GHS 48<span class="php-per">/mo</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ph-btns">
+            <button class="btn-sky" onclick="openOrder('v3')">Pre-order CLIMAS v3 →</button>
+            <button class="btn-out" onclick="location.href='/app'">Create Account</button>
+          </div>
+        </div>
+        <div>
+          <div class="dev-mock" style="max-width:320px;margin-left:auto;position:relative">
+            <div class="dev-v3-tag">CLIMAS v3</div>
+            <div class="dm-head"><span class="dm-t">CLIMAS v3</span><span class="dm-live"><span class="dm-dot"></span>LIVE</span></div>
+            <div class="dm-grid">
+              <div class="dm-m"><div class="dm-lbl">Temperature</div><div class="dm-val">32<span class="dm-u">°C</span></div></div>
+              <div class="dm-m"><div class="dm-lbl">Humidity</div><div class="dm-val">61<span class="dm-u">%</span></div></div>
+            </div>
+            <div class="dm-gas">
+              <div class="dm-gas-top"><span class="dm-lbl">Gas Level</span><span class="dm-safe">● SAFE</span></div>
+              <div class="dm-gval">183</div>
+              <div class="dm-bar-bg"><div class="dm-bar"></div></div>
+            </div>
+            <div class="dm-weather">
+              <div><div class="dm-w-city">KUMASI, GH</div><div class="dm-w-temp">28°C</div><div class="dm-w-desc">Partly Cloudy · Feels 31°C</div></div>
+              <div class="dm-w-ico">⛅</div>
+            </div>
+            <div class="oled" style="margin-top:12px">
+              <div class="oled-title">══ CLIMAS v3 ══</div>
+              <div>T: 32°C    H: 61%</div>
+              <div>GAS: 183   SAFE</div>
+              <div>KSI: 28°C  ⛅</div>
+            </div>
+            <div style="text-align:center;font-family:var(--mono);font-size:.5rem;color:var(--sky);letter-spacing:1px;margin-top:7px">▲ ON-DEVICE OLED DISPLAY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="prod-detail">
+    <div class="wrap">
+      <div class="pd-2col">
+        <div>
+          <div class="spec-block">
+            <div class="sb-title">What CLIMAS v3 Does</div>
+            <div class="spec-list">
+              <div class="si"><div class="si-ico">📟</div><div class="si-txt"><strong>OLED Display —</strong> A screen on the device shows live temperature, humidity and gas level at all times — always visible without needing your phone. On Pro, outdoor weather also appears.</div></div>
+              <div class="si"><div class="si-ico">⛅</div><div class="si-txt"><strong>OpenWeather Integration (Pro) —</strong> Pulls live outdoor weather for your city. Compare indoor vs outdoor conditions at a glance — shown on the OLED and on your dashboard. Requires Pro subscription.</div></div>
+              <div class="si"><div class="si-ico">🔥</div><div class="si-txt"><strong>Gas Detection —</strong> Continuously monitors for LPG, CO and methane 24/7. Instant alarm and push notification the moment a dangerous level is detected.</div></div>
+              <div class="si"><div class="si-ico">🌡️</div><div class="si-txt"><strong>Temperature & Humidity —</strong> Tracks indoor climate in real time with full cloud history.</div></div>
+              <div class="si"><div class="si-ico">📱</div><div class="si-txt"><strong>Full Dashboard —</strong> Live readings, weather widget, gas history and alert log on your phone and web dashboard.</div></div>
+              <div class="si"><div class="si-ico">📞</div><div class="si-txt"><strong>Emergency Call (Pro) —</strong> Sustained gas alarm triggers an automatic voice call to your emergency contact.</div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="dash-frame">
+            <div class="df-bar">
+              <div class="df-dot" style="background:#ff5f57"></div>
+              <div class="df-dot" style="background:#ffbd2e"></div>
+              <div class="df-dot" style="background:#28ca41"></div>
+              <div class="df-url">climasv3.com/dashboard — v3</div>
+            </div>
+            <div class="df-body">
+              <div class="df-w"><div class="df-wl">Temp</div><div class="df-wv">32<span class="df-wu">°C</span></div><div class="df-ws"><div class="df-wdot" style="background:var(--green)"></div>Normal</div></div>
+              <div class="df-w"><div class="df-wl">Humidity</div><div class="df-wv">61<span class="df-wu">%</span></div><div class="df-ws"><div class="df-wdot" style="background:var(--green)"></div>Good</div></div>
+              <div class="df-w"><div class="df-wl">Gas Level</div><div class="df-wv" style="color:var(--sky)">183</div><div class="df-ws"><div class="df-wdot" style="background:var(--green)"></div>Safe</div></div>
+              <div class="df-w"><div class="df-wl">Status</div><div class="df-wv" style="font-size:1rem;color:var(--green)">LIVE</div></div>
+              <div class="df-chart">
+                <div class="df-wl">Gas History</div>
+                <div class="df-bars">
+                  <div class="df-bi" style="height:15%"></div><div class="df-bi" style="height:20%"></div><div class="df-bi" style="height:18%"></div>
+                  <div class="df-bi" style="height:22%"></div><div class="df-bi" style="height:16%"></div><div class="df-bi hi" style="height:80%"></div>
+                  <div class="df-bi hi" style="height:88%"></div><div class="df-bi" style="height:21%"></div>
+                  <div class="df-bi" style="height:18%"></div><div class="df-bi" style="height:20%;background:var(--sky)"></div>
+                </div>
+              </div>
+              <div class="df-weather-w">
+                <div><div class="dfw-temp">28°C</div><div class="dfw-city">Kumasi, Ghana · Partly Cloudy</div></div>
+                <div style="text-align:right"><div style="font-size:1.6rem">⛅</div><div class="v3-only">PRO ONLY</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="compat-note" style="margin-top:16px">
+            <div class="compat-lbl">SUBSCRIPTION PLANS</div>
+            <div class="compat-txt"><strong>Basic (GHS 28/mo)</strong> — web dashboard, push notifications, OLED display. <strong>Pro (GHS 48/mo)</strong> — adds OpenWeather and auto emergency call. Each subscription covers 1 device.</div>
+          </div>
+          <div class="incl-grid" style="margin-top:16px">
+            <div class="incl-item"><span class="incl-ico">📦</span>CLIMAS v3 device + OLED</div>
+            <div class="incl-item"><span class="incl-ico">🔌</span>USB power cable</div>
+            <div class="incl-item"><span class="incl-ico">📄</span>Quick start guide</div>
+            <div class="incl-item"><span class="incl-ico">🔑</span>Activation token by email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <h2>See everything at a glance.</h2>
+      <p>Pre-order CLIMAS v3 and see your home's safety and the weather at a glance — all on one device.</p>
+      <button class="btn-white" onclick="openOrder('v3')">Pre-order CLIMAS v3 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-howitworks">
+  <section style="padding:108px 60px 60px;background:linear-gradient(160deg,var(--sky5),var(--white) 70%)">
+    <div class="wrap">
+      <div class="s-tag">How It Works</div>
+      <h1 style="font-family:var(--head);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;color:var(--dark);margin-bottom:14px">Simple to set up.<br><span style="color:var(--sky)">Always protecting.</span></h1>
+      <p class="s-sub">CLIMAS works in the background, constantly watching your home's air quality. Here is exactly how the system works from setup to alert.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="s-tag">Setup Process</div>
+      <h2 class="fade">Up and running in four steps.</h2>
+      <div class="steps-grid">
+        <div class="sc fade" data-n="01"><div class="sc-ico">📦</div><div class="sc-t">Order Your Device</div><div class="sc-p">Choose CLIMAS v2 or v3 from the store. We ship it fully assembled and tested — just plug it in.</div></div>
+        <div class="sc fade" data-n="02"><div class="sc-ico">👤</div><div class="sc-t">Create Account & Subscribe</div><div class="sc-p">Sign up at climasv3.com, choose your plan and pay securely via Paystack. Your activation token is emailed immediately.</div></div>
+        <div class="sc fade" data-n="03"><div class="sc-ico">📡</div><div class="sc-t">Register Your Device</div><div class="sc-p">Power on your CLIMAS. It creates a WiFi hotspot. Connect your phone, enter your home WiFi and token — done in 5 minutes.</div></div>
+        <div class="sc fade" data-n="04"><div class="sc-ico">🛡️</div><div class="sc-t">You're Protected</div><div class="sc-p">CLIMAS monitors 24/7, posts readings every 5 seconds and alerts you instantly if anything is dangerous.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section off">
+    <div class="wrap">
+      <div class="s-tag">Detection Flow</div>
+      <h2 class="fade">From detection to safety — in seconds.</h2>
+      <div class="flow-steps fade">
+        <div class="flow-step"><div class="fs-num">01</div><div class="fs-right"><div class="fs-title">CLIMAS Monitors Continuously</div><div class="fs-p">Gas, temperature and humidity are checked non-stop in the background. Every 5 seconds a reading is posted to the cloud — logged silently so you never have to think about it.</div></div></div>
+        <div class="flow-step"><div class="fs-num">02</div><div class="fs-right"><div class="fs-title">Data Analysed in Real Time</div><div class="fs-p">The device compares each reading against the configured safety threshold. Normal readings are logged to your cloud dashboard. Unusual changes are flagged immediately.</div></div></div>
+        <div class="flow-step"><div class="fs-num">03</div><div class="fs-right"><div class="fs-title">Dangerous Level Detected</div><div class="fs-p">When gas concentration exceeds the safety threshold, the device immediately triggers a loud local alarm. This happens within milliseconds regardless of internet connection.</div></div></div>
+        <div class="flow-step"><div class="fs-num">04</div><div class="fs-right"><div class="fs-title">Cloud Alert Sent to Your Phone</div><div class="fs-p">Simultaneously, a push notification is sent to your phone and the danger status appears on your dashboard. You are notified whether you are in the next room or on the other side of the world.</div></div></div>
+        <div class="flow-step"><div class="fs-num">05</div><div class="fs-right"><div class="fs-title">Emergency Call Placed (Pro)</div><div class="fs-p">If gas levels stay dangerous for 8 seconds, CLIMAS places an automated voice call to your emergency contact. The call alerts them that gas has been detected at your home. Pro plan only.</div></div></div>
+      </div>
+
+      <div class="flow-diagram fade" style="margin-top:52px">
+        <div class="fd-title">DETECTION FLOW</div>
+        <div class="fd-flow">
+          <div class="fd-node"><div class="fd-n-ico">💨</div><div class="fd-n-txt">Gas Detected</div><div class="fd-n-sub">Continuous</div></div>
+          <div class="fd-arrow">→</div>
+          <div class="fd-node"><div class="fd-n-ico">⚡</div><div class="fd-n-txt">Threshold Crossed</div><div class="fd-n-sub">Instant</div></div>
+          <div class="fd-arrow">→</div>
+          <div class="fd-node"><div class="fd-n-ico">🔊</div><div class="fd-n-txt">Local Alarm</div><div class="fd-n-sub">Instant</div></div>
+          <div class="fd-arrow">→</div>
+          <div class="fd-node"><div class="fd-n-ico">🔔</div><div class="fd-n-txt">Push Notification</div><div class="fd-n-sub">To your phone</div></div>
+          <div class="fd-arrow">→</div>
+          <div class="fd-node"><div class="fd-n-ico">📞</div><div class="fd-n-txt">Emergency Call</div><div class="fd-n-sub">Pro — after 8s</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <h2>Ready to get started?</h2>
+      <p>Pre-order your CLIMAS device and be protected in minutes.</p>
+      <button class="btn-white" onclick="go('store')">Pre-order Now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     DASHBOARD PAGE
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-dashboard">
+  <div class="dash-page-hero">
+    <div class="wrap">
+      <div class="s-tag">Cloud Dashboard</div>
+      <h1 style="font-family:var(--head);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;color:var(--dark);margin-bottom:12px">Your home data.<br><span style="color:var(--sky)">Always in your pocket.</span></h1>
+      <p class="s-sub" style="margin-bottom:0">The CLIMAS dashboard gives you live readings, historical data, alerts and — on Pro — live outdoor weather from OpenWeather. Accessible from any phone, tablet or computer browser.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="s-tag">Live Preview</div>
+      <h2 class="fade">This is what you see.</h2>
+      <div class="dash-big fade">
+        <div class="db-topbar">
+          <div class="db-dot" style="background:#ff5f57"></div>
+          <div class="db-dot" style="background:#ffbd2e"></div>
+          <div class="db-dot" style="background:#28ca41"></div>
+          <div class="db-url">climasv3.com/dashboard</div>
+          <span style="font-family:var(--mono);font-size:.58rem;color:var(--green)">● LIVE</span>
+        </div>
+        <div class="db-body">
+          <div class="db-widget"><div class="db-wl">Temperature</div><div class="db-wv">32<span class="db-wu">°C</span></div><div class="db-ws"><div class="db-dot" style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div>Normal range</div></div>
+          <div class="db-widget"><div class="db-wl">Humidity</div><div class="db-wv">61<span class="db-wu">%</span></div><div class="db-ws"><div class="db-dot" style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div>Good</div></div>
+          <div class="db-widget"><div class="db-wl">Gas Level</div><div class="db-wv" style="color:var(--sky)">183</div><div class="db-ws"><div class="db-dot" style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div>Safe</div></div>
+          <div class="db-widget"><div class="db-wl">Device Status</div><div class="db-wv" style="font-size:1.1rem;color:var(--green)">LIVE</div><div class="db-ws"><div class="db-dot" style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite"></div>Connected</div></div>
+          <div class="db-chart">
+            <div class="db-wl">Gas Concentration History (last 40 readings)</div>
+            <div class="db-bars">
+              <div class="db-bi" style="height:15%"></div><div class="db-bi" style="height:18%"></div><div class="db-bi" style="height:14%"></div>
+              <div class="db-bi" style="height:20%"></div><div class="db-bi" style="height:17%"></div><div class="db-bi" style="height:19%"></div>
+              <div class="db-bi" style="height:16%"></div><div class="db-bi" style="height:22%"></div><div class="db-bi" style="height:18%"></div>
+              <div class="db-bi" style="height:25%"></div><div class="db-bi" style="height:30%"></div><div class="db-bi hi" style="height:78%"></div>
+              <div class="db-bi hi" style="height:86%"></div><div class="db-bi" style="height:22%"></div><div class="db-bi" style="height:18%"></div>
+              <div class="db-bi" style="height:20%;background:var(--sky);opacity:1"></div>
+            </div>
+          </div>
+          <div class="db-weather">
+            <div><div class="dbw-temp">28°C</div><div class="dbw-city">Kumasi, Ghana · Partly Cloudy · Feels 31°C</div></div>
+            <div><div class="dbw-ico">⛅</div><div class="dbw-note">OPENWEATHER — PRO ONLY</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section off">
+    <div class="wrap">
+      <div class="s-tag">Dashboard Features</div>
+      <h2 class="fade">Everything you need to stay informed.</h2>
+      <div class="dash-features">
+        <div class="fc fade"><div class="fc-ico">📊</div><div class="fc-t">Live Readings</div><div class="fc-p">Temperature, humidity and gas level updated every 5 seconds in real time.</div></div>
+        <div class="fc fade"><div class="fc-ico">📈</div><div class="fc-t">Gas History Chart</div><div class="fc-p">Visual history of the last 40 gas readings. Alarm spikes are shown in red so you can see exactly when events happened.</div></div>
+        <div class="fc fade"><div class="fc-ico">🚨</div><div class="fc-t">Alert Log</div><div class="fc-p">Every alarm event is logged with timestamp, gas level and duration. Access your full alert history at any time.</div></div>
+        <div class="fc fade"><div class="fc-ico">⛅</div><div class="fc-t">Outdoor Weather — Pro</div><div class="fc-p">Live outdoor weather from OpenWeather — temperature, humidity and current conditions. Pro plan for both v2 and v3.</div></div>
+        <div class="fc fade"><div class="fc-ico">📱</div><div class="fc-t">Installable App</div><div class="fc-p">Add to your phone's home screen from Safari or Chrome. Works like a native app — no App Store needed.</div></div>
+        <div class="fc fade"><div class="fc-ico">🔔</div><div class="fc-t">Push Notifications</div><div class="fc-p">Receive alarm notifications even when the app is closed. Manage your notification settings in the app.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <h2>See your home's data live.</h2>
+      <p>Pre-order your CLIMAS, create your account and your dashboard is ready instantly.</p>
+      <button class="btn-white" onclick="go('store')">Pre-order Now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     STORE PAGE
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-store">
+  <div class="store-hero">
+    <div style="position:relative;z-index:1">
+      <div class="s-tag" style="justify-content:center;margin:0 auto 14px">Pre-order</div>
+      <h1 style="font-family:var(--head);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;color:var(--dark);margin-bottom:12px">Pre-order Your CLIMAS Device</h1>
+      <p style="font-size:.97rem;color:var(--mid);max-width:480px;margin:0 auto;line-height:1.7">Each device is hand-built to order. Fill in your details and we'll build and ship yours within <strong>5 working days</strong>.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="store-grid">
+        <div class="stc fade">
+          <div class="stc-img v2b">
+            <div class="stc-vtag t-v2">CLIMAS v2</div>
+            <div class="mini-mock">
+              <div class="mm-top"><span>CLIMAS v2</span><span style="color:var(--green)">● LIVE</span></div>
+              <div class="mm-row">
+                <div class="mm-m"><div class="mm-l">TEMP</div><div class="mm-v">32°C</div></div>
+                <div class="mm-m"><div class="mm-l">HUM</div><div class="mm-v">61%</div></div>
+              </div>
+              <div class="mm-gas"><div class="mm-l">GAS LEVEL</div><div class="mm-v" style="color:var(--sky)">183 SAFE</div></div>
+            </div>
+          </div>
+          <div class="stc-body">
+            <div class="stc-name">CLIMAS v2</div>
+            <div class="stc-sub">Monitors your home from the cloud. All readings on your phone — small, quiet and always watching.</div>
+            <div class="stc-price">
+              <div class="stp-l"><div class="stp-lbl">DEVICE</div><div class="stp-amt" style="color:var(--green)">FREE</div></div>
+              <div class="stp-r">Subscription from <strong>GHS 18/mo</strong><br><span style="font-size:.7rem;color:var(--light)">Basic or Pro required</span></div>
+            </div>
+            <div class="stc-feats">
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Gas detection</div>
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Temperature & humidity</div>
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Web dashboard</div>
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Push notifications</div>
+              <div class="stf"><div class="stfd" style="background:#e2e8f0"></div><span style="color:var(--light)">OpenWeather — Pro only</span></div>
+              <div class="stf"><div class="stfd" style="background:#e2e8f0"></div><span style="color:var(--light)">No on-device screen</span></div>
+            </div>
+            <button class="stc-btn stb-out" onclick="openOrder('v2')">Pre-order CLIMAS v2 →</button>
+          </div>
+        </div>
+        <div class="stc star fade">
+          <div class="stc-img v3b">
+            <div class="stc-vtag t-v3">CLIMAS v3</div>
+            <div class="stc-pop">MOST POPULAR</div>
+            <div class="mini-mock" style="position:relative">
+              <div class="mm-top"><span>CLIMAS v3</span><span style="color:var(--green)">● LIVE</span></div>
+              <div class="mm-row">
+                <div class="mm-m"><div class="mm-l">TEMP</div><div class="mm-v">32°C</div></div>
+                <div class="mm-m"><div class="mm-l">HUM</div><div class="mm-v">61%</div></div>
+              </div>
+              <div class="mm-gas"><div class="mm-l">GAS LEVEL</div><div class="mm-v" style="color:var(--sky)">183 SAFE</div></div>
+              <div class="mm-oled">CLIMAS v3<br>T:32 H:61%<br>GAS:183 OK<br>KSI:28C ⛅</div>
+            </div>
+          </div>
+          <div class="stc-body">
+            <div class="stc-name">CLIMAS v3</div>
+            <div class="stc-sub">OLED display on the device — see readings at a glance. OpenWeather available on Pro.</div>
+            <div class="stc-price" style="border-color:rgba(14,165,233,.2)">
+              <div class="stp-l"><div class="stp-lbl">DEVICE</div><div class="stp-amt" style="color:var(--green)">FREE</div></div>
+              <div class="stp-r">Subscription from <strong>GHS 28/mo</strong><br><span style="font-size:.7rem;color:var(--light)">Basic or Pro required</span></div>
+            </div>
+            <div class="stc-feats">
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Gas detection</div>
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Temperature & humidity</div>
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Web dashboard</div>
+              <div class="stf on"><div class="stfd" style="background:var(--sky)"></div>Push notifications</div>
+              <div class="stf on"><div class="stfd" style="background:var(--green)"></div>OLED display — always on</div>
+              <div class="stf"><div class="stfd" style="background:#e2e8f0"></div><span style="color:var(--light)">OpenWeather — Pro only</span></div>
+            </div>
+            <button class="stc-btn stb-sky" onclick="openOrder('v3')">Pre-order CLIMAS v3 →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ship-note fade">
+        <span class="ship-ico">🚚</span>
+        <div>
+          <div class="ship-t">Shipping & Delivery</div>
+          <div class="ship-p">We build each device by hand after your order is confirmed. Allow <strong>5 working days</strong> to build and deliver your CLIMAS anywhere in Ghana. You will receive an order confirmation with build status updates. Your subscription activation token is emailed separately once your device ships.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <h2>Not sure which to choose?</h2>
+      <p>Read about both products in detail or contact us and we'll help you decide.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-white" onclick="go('v2')">Compare Devices →</button>
+        <button onclick="go('contact')" style="background:rgba(255,255,255,.15);color:#fff;padding:13px 26px;border-radius:9px;font-weight:600;font-size:.91rem;cursor:pointer;border:2px solid rgba(255,255,255,.3);font-family:var(--body)">Contact Us</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ABOUT PAGE
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-about">
+  <div class="about-hero">
+    <div class="wrap">
+      <div class="s-tag">About CLIMAS</div>
+      <h1 style="font-family:var(--head);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;color:var(--dark);margin-bottom:12px">Built to protect<br><span style="color:var(--sky)">the homes we love.</span></h1>
+      <p class="s-sub">CLIMAS was created to solve a common but dangerous problem — gas leaks happen without warning, and most homes have no way to detect them until it is too late.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="about-grid">
+        <div class="about-text">
+          <h2 style="margin-bottom:20px">Our Story</h2>
+          <p>Gas is used in millions of homes across Ghana every day for cooking and heating. It is affordable, convenient and powerful. But it is also invisible and odourless in dangerous concentrations — making leaks extremely hard to detect without the right tools.</p>
+          <p>CLIMAS was built from a simple belief: every home deserves real-time awareness of what is in the air. We combined affordable IoT hardware with a cloud platform to create a safety system that is always on, always watching and always ready to alert you.</p>
+          <p>We started with the kitchen — the most common place for gas incidents — and designed CLIMAS to sit quietly in the background, monitoring continuously without interrupting daily life. When something is wrong, it does not wait. It acts immediately.</p>
+        </div>
+        <div>
+          <div class="dev-mock">
+            <div class="dm-head"><span class="dm-t">ALWAYS MONITORING</span><span class="dm-live"><span class="dm-dot"></span>LIVE</span></div>
+            <div class="dm-grid">
+              <div class="dm-m"><div class="dm-lbl">Temperature</div><div class="dm-val">32<span class="dm-u">°C</span></div></div>
+              <div class="dm-m"><div class="dm-lbl">Humidity</div><div class="dm-val">61<span class="dm-u">%</span></div></div>
+            </div>
+            <div class="dm-gas">
+              <div class="dm-gas-top"><span class="dm-lbl">Gas Level</span><span class="dm-safe">● SAFE</span></div>
+              <div class="dm-gval">183</div>
+              <div class="dm-bar-bg"><div class="dm-bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mission-cards fade">
+        <div class="mc"><div class="mc-ico">🛡️</div><div class="mc-t">Safety First</div><div class="mc-p">Every design decision is made with one question: does this make homes safer? From gas detection to the emergency call system, safety is the core principle.</div></div>
+        <div class="mc"><div class="mc-ico">📡</div><div class="mc-t">Connected Technology</div><div class="mc-p">IoT connectivity means CLIMAS is useful even when you are not at home. Real-time alerts reach you wherever you are, whenever they matter.</div></div>
+        <div class="mc"><div class="mc-ico">🇬🇭</div><div class="mc-t">Built for Ghana</div><div class="mc-p">Designed with the realities of Ghanaian homes in mind — gas cookers, enclosed kitchens, and the need for affordable, reliable technology.</div></div>
+        <div class="mc"><div class="mc-ico">💡</div><div class="mc-t">Simple to Use</div><div class="mc-p">No electrician, no technical knowledge, no complicated setup. If you can connect to WiFi, you can install CLIMAS — in under 5 minutes.</div></div>
+      </div>
+
+      <div class="team-note fade">
+        <div class="tn-t">Our Mission</div>
+        <div class="tn-p">To make smart home safety accessible to every household — not just those who can afford expensive security systems. CLIMAS is priced to be within reach, designed to be simple and built to save lives. We believe technology should work for everyone, in every home.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <div style="position:relative;z-index:1">
+      <h2>Join the CLIMAS family.</h2>
+      <p>Be among the first to protect your home with CLIMAS.</p>
+      <button class="btn-white" onclick="go('store')">Pre-order Now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     CONTACT PAGE
+════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-contact">
+  <section style="padding:108px 60px 60px;background:linear-gradient(160deg,var(--sky5),var(--white) 70%)" class="contact-hero">
+    <div class="wrap">
+      <div class="s-tag">Contact Us</div>
+      <h1 style="font-family:var(--head);font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;color:var(--dark);margin-bottom:12px">We're here to help.</h1>
+      <p class="s-sub">Questions about CLIMAS, your order, or your account? Reach out and we'll get back to you as soon as possible.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div class="contact-info">
+          <h2 style="margin-bottom:28px">Get in touch.</h2>
+          <div class="ci-item">
+            <div class="ci-ico">📧</div>
+            <div><div class="ci-title">Email</div><div class="ci-val"><a href="mailto:support@climasv3.com">support@climasv3.com</a><br>We reply within 24 hours.</div></div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-ico">📱</div>
+            <div><div class="ci-title">WhatsApp / Phone</div><div class="ci-val"><a href="tel:+233000000000">+233 00 000 0000</a><br>Mon–Fri, 9am–6pm GMT</div></div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-ico">📍</div>
+            <div><div class="ci-title">Location</div><div class="ci-val">Kumasi, Ashanti Region<br>Ghana 🇬🇭</div></div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-ico">🛒</div>
+            <div><div class="ci-title">Ready to Pre-order?</div><div class="ci-val"><span style="color:var(--sky);cursor:pointer;font-weight:600" onclick="go('store')">Visit the Store →</span></div></div>
+          </div>
+
+          <!-- FAQ teaser -->
+          <div style="background:var(--sky5);border:1px solid var(--sky4);border-radius:12px;padding:20px;margin-top:8px">
+            <div style="font-family:var(--head);font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:12px">Common Questions</div>
+            <div class="faq-wrap" style="margin-top:0">
+              <div class="faq-i" style="border-bottom:1px solid var(--sky4)">
+                <button class="faq-btn" onclick="toggleFaq(this)">How do I activate my device?<div class="faq-ico">+</div></button>
+                <div class="faq-ans">Power on your CLIMAS, connect your phone to the CLIMAS-SETUP WiFi hotspot it creates, open a browser, go to 192.168.4.1 and enter your home WiFi details and activation token.</div>
+              </div>
+              <div class="faq-i" style="border-bottom:1px solid var(--sky4)">
+                <button class="faq-btn" onclick="toggleFaq(this)">I didn't receive my token email.<div class="faq-ico">+</div></button>
+                <div class="faq-ans">Check your spam/junk folder first. If it's not there, email support@climasv3.com with your account email and we'll resend it within the hour.</div>
+              </div>
+              <div class="faq-i">
+                <button class="faq-btn" onclick="toggleFaq(this)">Can I change my emergency contact?<div class="faq-ico">+</div></button>
+                <div class="faq-ans">Yes — go to Settings in your CLIMAS dashboard and update your emergency contact number at any time. Changes take effect immediately.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form">
+          <div class="cf-title">Send us a message</div>
+          <div id="contactFormInner">
+            <div class="cf-2col">
+              <div class="fg"><label>First Name *</label><input id="cf-fn" placeholder="Kwame" type="text"></div>
+              <div class="fg"><label>Last Name *</label><input id="cf-ln" placeholder="Asante" type="text"></div>
+            </div>
+            <div class="fg"><label>Email Address *</label><input id="cf-em" placeholder="you@example.com" type="email"></div>
+            <div class="fg"><label>Subject *</label>
+              <select id="cf-sub">
+                <option value="">Select a topic</option>
+                <option>Order enquiry</option>
+                <option>Device setup help</option>
+                <option>Subscription / billing</option>
+                <option>Technical issue</option>
+                <option>General question</option>
+              </select>
+            </div>
+            <div class="fg"><label>Message *</label><textarea id="cf-msg" placeholder="Tell us how we can help..."></textarea></div>
+            <button class="send-btn" onclick="sendContact()">Send Message →</button>
+          </div>
+          <div class="send-success" id="contactSuccess">
+            <div class="ss-ico">✅</div>
+            <div class="ss-t">Message Sent!</div>
+            <div class="ss-p">Thank you for reaching out. We'll reply to your email within 24 hours.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ORDER MODAL
+════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="orderModal" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalBox">
+    <div id="orderFormView">
+      <div class="modal-head">
+        <div><div class="mh-t" id="mTitle">Pre-order CLIMAS v2</div><div class="mh-s">Free device — just pay your monthly subscription</div></div>
+        <button class="m-close" onclick="closeOrder()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="order-sum">
+          <div><div class="os-n" id="mProdName">CLIMAS v2</div><div class="os-d" id="mProdDesc">Cloud-first safety monitor</div></div>
+          <div class="os-p" id="mProdPrice" style="color:var(--green)">FREE</div>
+        </div>
+        <div class="m2col">
+          <div class="mfg"><label>First Name *</label><input class="mfg-in" id="mFn" placeholder="Kwame" type="text"></div>
+          <div class="mfg"><label>Last Name *</label><input class="mfg-in" id="mLn" placeholder="Asante" type="text"></div>
+        </div>
+        <div class="mfg"><label>Email Address *</label><input class="mfg-in" id="mEm" placeholder="you@example.com" type="email"></div>
+        <div class="mfg"><label>Phone Number *</label><input class="mfg-in" id="mPh" placeholder="024 000 0000" type="tel"></div>
+        <div class="mfg"><label>Delivery Address *</label><input class="mfg-in" id="mAd" placeholder="House number, street, area" type="text"></div>
+        <div class="m2col">
+          <div class="mfg"><label>City *</label><input class="mfg-in" id="mCt" placeholder="Kumasi" type="text"></div>
+          <div class="mfg"><label>Region *</label>
+            <select class="mfg-in" id="mRg">
+              <option value="">Select region</option>
+              <option>Ashanti</option><option>Greater Accra</option><option>Western</option>
+              <option>Eastern</option><option>Central</option><option>Northern</option>
+              <option>Upper East</option><option>Upper West</option><option>Volta</option>
+              <option>Brong-Ahafo</option><option>Oti</option><option>Savannah</option>
+              <option>North East</option><option>Western North</option><option>Ahafo</option><option>Bono East</option>
+            </select>
+          </div>
+        </div>
+        <div class="mfg">
+          <label>Quantity</label>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="chQty(-1)">−</button>
+            <span class="qty-v" id="qtyV">1</span>
+            <button class="qty-btn" onclick="chQty(1)">+</button>
+            <span style="font-size:.78rem;color:var(--light);margin-left:6px">unit(s)</span>
+          </div>
+        </div>
+        <div class="mfg"><label>Notes (optional)</label><input class="mfg-in" id="mNt" placeholder="Any special instructions..." type="text"></div>
+        <div class="order-total">
+          <div class="ot-l">Device</div>
+          <div class="ot-v" style="color:var(--green)">FREE</div>
+        </div>
+        <div style="background:var(--sky5);border:1px solid var(--sky4);border-radius:9px;padding:11px 14px;margin-bottom:13px;display:flex;align-items:center;gap:9px">
+          <span style="font-size:1rem">💳</span>
+          <div style="font-size:.78rem;color:var(--mid);line-height:1.5">Subscription starts at <strong style="color:var(--sky)" id="mSubNote">GHS 18/mo</strong> (Basic) or <strong style="color:var(--sky)" id="mProNote">GHS 38/mo</strong> (Pro). Activate after your device arrives.</div>
+        </div>
+        <div class="m-note">🔨 Each device is hand-built after your order. Allow <strong>5 working days</strong> to build and deliver. We'll contact you to confirm and arrange delivery. No payment for the device — subscription billed separately.</div>
+        <button class="place-btn" id="placeBtn" onclick="placeOrder()">Place Pre-order — Free Device</button>
+      </div>
+    </div>
+    <div id="orderOkView" style="display:none">
+      <div class="order-ok">
+        <div class="ok-ico">✅</div>
+        <div class="ok-t">Order Received!</div>
+        <div class="ok-p">Your pre-order is confirmed! We'll build your device and have it delivered within <strong>5 working days</strong>. We'll be in touch to arrange delivery.</div>
+        <div class="ok-ref" id="okRef">REF: CLM-000000</div>
+        <div style="font-size:.82rem;color:var(--mid);margin-bottom:18px">Confirmation sent to <strong id="okEmail"></strong></div>
+        <button class="ok-close" onclick="closeOrder()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════ -->
+<footer>
+  <div class="ft-grid">
+    <div class="ft-brand">
+      <div class="fl">CLIMAS</div>
+      <p>Smart Indoor Climate & Gas Safety System. Real-time gas detection and emergency alerting for homes across Ghana.</p>
+    </div>
+    <div class="ft-col">
+      <h4>Products</h4>
+      <a onclick="go('v2')">CLIMAS v2</a>
+      <a onclick="go('v3')">CLIMAS v3</a>
+      <a onclick="go('dashboard')">Dashboard</a>
+      <a onclick="go('store')">Store</a>
+    </div>
+    <div class="ft-col">
+      <h4>Learn</h4>
+      <a onclick="go('howitworks')">How It Works</a>
+      <a onclick="go('about')">About CLIMAS</a>
+      <a onclick="go('home')">Pricing</a>
+    </div>
+    <div class="ft-col">
+      <h4>Get Help</h4>
+      <a onclick="go('contact')">Contact Us</a>
+      <a href="mailto:support@climasv3.com">Email Support</a>
+      <a onclick="location.href='/app'">My Account</a>
+      <a onclick="location.href='/app'">Dashboard Login</a>
+    </div>
+  </div>
+  <div class="ft-bot">
+    <span>© 2025 CLIMAS. All rights reserved.</span>
+    <span>Smart Home Safety — Made in Ghana 🇬🇭</span>
+  </div>
+</footer>
+
+<script>
+// ── ROUTING ────────────────────────────────────────────
+function go(page) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('pg-' + page);
+  if (el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+  // update active nav link
+  document.querySelectorAll('[id^="nl-"]').forEach(a => a.classList.remove('active-link'));
+  const nl = document.getElementById('nl-' + page);
+  if (nl) nl.classList.add('active-link');
+  triggerFades();
+  closeMob();
+}
+
+// ── NAV SCROLL ─────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('shadow', scrollY > 40);
+});
+
+// ── MOBILE NAV ─────────────────────────────────────────
+function toggleMob() {
+  document.getElementById('mobNav').classList.toggle('open');
+}
+function closeMob() {
+  document.getElementById('mobNav').classList.remove('open');
+}
+
+// ── FADE OBSERVER ──────────────────────────────────────
+function triggerFades() {
+  setTimeout(() => {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+    }, {threshold:.08});
+    document.querySelectorAll('.fade:not(.in)').forEach(el => obs.observe(el));
+  }, 60);
+}
+triggerFades();
+
+// ── FAQ ────────────────────────────────────────────────
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-i');
+  const open = item.classList.contains('open');
+  // close all in same container
+  btn.closest('.faq-wrap, .contact-info').querySelectorAll('.faq-i.open').forEach(i => i.classList.remove('open'));
+  if (!open) item.classList.add('open');
+}
+
+// ── CONTACT FORM ───────────────────────────────────────
+function sendContact() {
+  const fn = document.getElementById('cf-fn').value.trim();
+  const em = document.getElementById('cf-em').value.trim();
+  const sb = document.getElementById('cf-sub').value;
+  const mg = document.getElementById('cf-msg').value.trim();
+  if (!fn || !em || !sb || !mg) { alert('Please fill in all required fields.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { alert('Please enter a valid email address.'); return; }
+  fetch('/v1/contact', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name: fn + ' ' + document.getElementById('cf-ln').value, email: em, subject: sb, message: mg})
+  }).catch(()=>{});
+  document.getElementById('contactFormInner').style.display = 'none';
+  document.getElementById('contactSuccess').style.display = 'block';
+}
+
+// ── STORE / ORDER MODAL ────────────────────────────────
+const PRODUCTS = {
+  v2: {name:'CLIMAS v2', desc:'Cloud-first safety monitor', basic:'GHS 18/mo', pro:'GHS 38/mo'},
+  v3: {name:'CLIMAS v3', desc:'Full display + weather monitor', basic:'GHS 28/mo', pro:'GHS 48/mo'}
+};
+let curProd = 'v2', qty = 1;
+
+function openOrder(v) {
+  curProd = v; qty = 1;
+  const p = PRODUCTS[v];
+  document.getElementById('mTitle').textContent    = 'Pre-order ' + p.name;
+  document.getElementById('mProdName').textContent = p.name;
+  document.getElementById('mProdDesc').textContent = p.desc;
+  document.getElementById('mProdPrice').textContent= 'FREE';
+  document.getElementById('mSubNote').textContent  = p.basic;
+  document.getElementById('mProNote').textContent  = p.pro;
+  document.getElementById('qtyV').textContent = 1;
+  document.getElementById('orderFormView').style.display = 'block';
+  document.getElementById('orderOkView').style.display   = 'none';
+  // clear inputs
+  ['mFn','mLn','mEm','mPh','mAd','mCt','mNt'].forEach(id => {
+    document.getElementById(id).value = '';
+    document.getElementById(id).classList.remove('err');
+  });
+  document.getElementById('mRg').value = '';
+  document.getElementById('orderModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOrder() {
+  document.getElementById('orderModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('orderModal')) closeOrder();
+}
+
+function chQty(d) {
+  qty = Math.max(1, Math.min(10, qty + d));
+  document.getElementById('qtyV').textContent = qty;
+}
+
+function placeOrder() {
+  const required = [
+    {id:'mFn'},{id:'mLn'},{id:'mEm'},{id:'mPh'},{id:'mAd'},{id:'mCt'}
+  ];
+  let ok = true;
+  required.forEach(f => {
+    const el = document.getElementById(f.id);
+    el.classList.remove('err');
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+  });
+  const rg = document.getElementById('mRg');
+  if (!rg.value) { rg.classList.add('err'); ok = false; }
+  if (!ok) return;
+  const em = document.getElementById('mEm').value;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+    document.getElementById('mEm').classList.add('err'); return;
+  }
+  const btn = document.getElementById('placeBtn');
+  btn.disabled = true; btn.textContent = 'Processing...';
+  const ref = 'CLM-' + Date.now().toString().slice(-6);
+  const orderData = {
+    ref, product: curProd, product_name: PRODUCTS[curProd].name,
+    qty,
+    name: document.getElementById('mFn').value + ' ' + document.getElementById('mLn').value,
+    email: em, phone: document.getElementById('mPh').value,
+    address: document.getElementById('mAd').value + ', ' + document.getElementById('mCt').value + ', ' + document.getElementById('mRg').value,
+    notes: document.getElementById('mNt').value,
+    timestamp: new Date().toISOString()
+  };
+  fetch('/v1/order', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(orderData)
+  }).catch(()=>{}).finally(() => {
+    document.getElementById('okRef').textContent  = 'REF: ' + ref;
+    document.getElementById('okEmail').textContent = em;
+    document.getElementById('orderFormView').style.display = 'none';
+    document.getElementById('orderOkView').style.display   = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Place Pre-order — Free Device';
+  });
+}
+
+// init active link
+document.getElementById('nl-home').classList.add('active-link');
+</script>
+</body>
+</html>

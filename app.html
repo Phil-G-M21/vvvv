@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CLIMAS">
+<meta name="theme-color" content="#07090d">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
+<title>CLIMAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--bg1:#0c0f15;--bg2:#12151d;--bg3:#181c26;
+  --bdr:#1e2230;--bdr2:#262b3a;
+  --blue:#4f8ef7;--blue2:#7aaeff;--cyan:#0ea5e9;
+  --amber:#f59e0b;--red:#ef4444;--green:#10b981;
+  --text:#eef0f6;--t2:#8a90a2;--t3:#444c5e;
+  --mono:'Share Tech Mono',monospace;
+  --ui:'DM Sans',sans-serif;
+  --head:'Barlow Condensed',sans-serif;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+}
+html,body{height:100%;background:var(--bg);overflow:hidden}
+body{font-family:var(--ui);color:var(--text);display:flex;flex-direction:column}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:var(--bdr2)}
+.grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(14,165,233,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.015) 1px,transparent 1px);background-size:48px 48px}
+
+/* ══ AUTH ═════════════════════════════════════════ */
+#authScreen{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;padding-top:calc(var(--sat) + 20px)}
+.auth-wrap{width:100%;max-width:400px}
+.auth-logomark{text-align:center;margin-bottom:32px}
+.auth-logomark svg{width:56px;height:56px;margin-bottom:12px}
+.auth-logomark h1{font-family:var(--mono);font-size:1.1rem;color:var(--cyan);letter-spacing:3px}
+.auth-logomark p{font-size:.8rem;color:var(--t3);margin-top:4px}
+.auth-card{background:var(--bg1);border:1px solid var(--bdr2);border-radius:16px;overflow:hidden}
+.auth-tabs{display:flex;border-bottom:1px solid var(--bdr)}
+.auth-tab{flex:1;padding:14px;text-align:center;cursor:pointer;font-size:.85rem;font-weight:500;color:var(--t3);transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.auth-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.auth-body{padding:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:var(--mono);font-size:.6rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+.field input{width:100%;background:var(--bg2);border:1px solid var(--bdr2);color:var(--text);padding:12px 14px;border-radius:9px;font-family:var(--ui);font-size:.95rem;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--cyan)}
+.field input::placeholder{color:var(--t3)}
+.auth-submit{width:100%;padding:14px;border:none;border-radius:9px;background:var(--cyan);color:#fff;font-family:var(--ui);font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:4px}
+.auth-submit:hover{opacity:.88}
+.auth-submit:disabled{opacity:.5;cursor:not-allowed}
+.auth-error{display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--red);margin-top:12px}
+.auth-error.show{display:block}
+
+/* ══ APP SHELL ════════════════════════════════════ */
+#appShell{display:none;flex-direction:column;height:100%;padding-top:var(--sat)}
+#appShell.visible{display:flex}
+.app-header{background:rgba(7,9,13,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:10}
+.ah-left{display:flex;align-items:center;gap:10px}
+.ah-logo{font-family:var(--mono);font-size:.95rem;color:var(--cyan);letter-spacing:2px}
+.ah-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.ah-dot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:glow 2s infinite}
+.ah-dot.off{background:var(--t3)}
+@keyframes glow{0%,100%{box-shadow:0 0 6px var(--green)}50%{box-shadow:0 0 14px var(--green)}}
+.ah-right{display:flex;align-items:center;gap:10px}
+.ah-time{font-family:var(--mono);font-size:.6rem;color:var(--t3)}
+.ah-plan{font-family:var(--mono);font-size:.58rem;padding:3px 9px;border-radius:20px;letter-spacing:1px}
+.plan-none{color:var(--t3);border:1px solid var(--bdr2)}
+.plan-basic{color:var(--cyan);background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25)}
+.plan-pro{color:var(--amber);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25)}
+.app-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;z-index:1}
+.page-pad{padding:16px 16px 8px}
+.page{display:none}.page.active{display:block}
+
+/* ══ SUBSCRIBE ════════════════════════════════════ */
+.subscribe-hero{text-align:center;padding:24px 16px 16px}
+.sh-badge{display:inline-block;font-family:var(--mono);font-size:.6rem;color:var(--cyan);background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);padding:4px 14px;border-radius:20px;letter-spacing:2px;margin-bottom:14px}
+.sh-title{font-family:var(--head);font-size:2.2rem;font-weight:900;letter-spacing:-1px;line-height:1;margin-bottom:8px}
+.sh-sub{font-size:.85rem;color:var(--t2);line-height:1.5}
+
+/* Device model picker */
+.model-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.mp-btn{padding:12px 8px;border-radius:11px;border:2px solid var(--bdr2);background:var(--bg1);cursor:pointer;text-align:center;transition:all .2s}
+.mp-btn.active{border-color:var(--cyan);background:rgba(14,165,233,.07)}
+.mp-btn .mp-v{font-family:var(--mono);font-size:.58rem;color:var(--t3);letter-spacing:2px;margin-bottom:5px}
+.mp-btn.active .mp-v{color:var(--cyan)}
+.mp-btn .mp-n{font-family:var(--head);font-size:1.1rem;font-weight:900;color:var(--t2)}
+.mp-btn.active .mp-n{color:var(--text)}
+.mp-btn .mp-d{font-size:.72rem;color:var(--t3);margin-top:3px}
+
+.plan-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.plan-card{background:var(--bg1);border:1px solid var(--bdr2);border-radius:14px;padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.plan-card.recommended{border-color:rgba(245,158,11,.4)}
+.plan-card.recommended::before{content:"MOST POPULAR";position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:.52rem;letter-spacing:2px;color:var(--amber);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);padding:3px 10px;border-radius:20px}
+.plan-card:hover{transform:translateY(-2px);border-color:var(--cyan)}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.pc-name{font-family:var(--head);font-size:1.4rem;font-weight:900;letter-spacing:-1px}
+.pc-price{text-align:right}
+.pc-amount{font-family:var(--head);font-size:1.5rem;font-weight:900;line-height:1}
+.pc-period{font-size:.72rem;color:var(--t2)}
+.pc-features{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.pc-feat{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--t2)}
+.pc-feat .check{color:var(--green);font-size:.75rem}
+.pc-feat .cross{color:var(--t3);font-size:.75rem}
+.pc-btn{width:100%;padding:12px;border:none;border-radius:9px;font-family:var(--ui);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.pc-btn-basic{background:var(--bg2);color:var(--text);border:1px solid var(--bdr2)}
+.pc-btn-basic:hover{border-color:var(--cyan);color:var(--cyan)}
+.pc-btn-pro{background:linear-gradient(135deg,var(--amber),#f97316);color:#fff}
+.pc-btn-pro:hover{opacity:.9}
+.token-entry{background:var(--bg1);border:1px solid var(--bdr2);border-radius:14px;padding:20px;margin-bottom:16px}
+.te-title{font-family:var(--mono);font-size:.62rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+.te-row{display:flex;gap:10px}
+.te-input{flex:1;background:var(--bg2);border:1px solid var(--bdr2);color:var(--text);padding:11px 14px;border-radius:9px;font-family:var(--mono);font-size:.88rem;outline:none;letter-spacing:2px;transition:border-color .2s}
+.te-input:focus{border-color:var(--cyan)}
+.te-input::placeholder{letter-spacing:1px;color:var(--t3)}
+.te-btn{padding:11px 18px;background:var(--cyan);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.te-btn:hover{opacity:.85}
+
+/* ══ DASHBOARD ════════════════════════════════════ */
+.no-device-msg{text-align:center;padding:40px 20px;color:var(--t2);font-size:.88rem;line-height:1.6}
+.no-device-msg .big{font-size:2.5rem;margin-bottom:12px}
+.alarm-banner{display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:13px;padding:14px 16px;margin-bottom:14px;animation:aPulse 1s infinite}
+.alarm-banner.show{display:flex;align-items:center;gap:12px}
+@keyframes aPulse{0%,100%{border-color:rgba(239,68,68,.3)}50%{border-color:var(--red)}}
+.ab-ico{font-size:1.6rem;flex-shrink:0}
+.ab-txt h3{font-family:var(--head);font-size:1.3rem;font-weight:900;color:var(--red);letter-spacing:-1px}
+.ab-txt p{font-size:.78rem;color:var(--t2);margin-top:2px}
+.ab-gas{font-family:var(--mono);font-size:.82rem;color:var(--red);margin-top:6px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric{background:var(--bg1);border:1px solid var(--bdr);border-radius:13px;padding:15px;transition:border-color .3s}
+.metric.alarm-card{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.03)}
+.m-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.m-lbl{font-family:var(--mono);font-size:.54rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase}
+.m-ico{font-size:1rem}
+.m-val{font-family:var(--head);font-size:2.1rem;font-weight:900;line-height:1}
+.m-unit{font-size:.9rem;color:var(--t3);font-weight:400}
+.m-sub{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:.7rem;color:var(--t3)}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--green)}.da{background:var(--amber);animation:p 1.5s infinite}.dr{background:var(--red);animation:p 1s infinite}.dx{background:var(--t3)}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.gas-full{background:var(--bg1);border:1px solid var(--bdr);border-radius:13px;padding:15px;margin-bottom:12px;transition:border-color .3s}
+.gas-full.alarm-card{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.03)}
+.gf-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.gf-lbl{font-family:var(--mono);font-size:.54rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase}
+.g-badge{font-family:var(--mono);font-size:.6rem;padding:3px 10px;border-radius:20px;letter-spacing:1px}
+.g-safe{color:var(--green);background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)}
+.g-warn{color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}
+.g-alarm{color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+.gf-val{font-family:var(--head);font-size:3rem;font-weight:900;line-height:1;margin-bottom:10px}
+.gf-bar-bg{background:var(--bg3);border-radius:5px;height:7px;overflow:hidden;margin-bottom:6px}
+.gf-bar{height:100%;border-radius:5px;transition:width .5s ease,background .4s}
+.gf-hint{font-family:var(--mono);font-size:.58rem;color:var(--t3)}
+
+/* Weather widget (v3 Pro) */
+.weather-card{display:none;background:linear-gradient(135deg,rgba(14,165,233,.1),rgba(14,165,233,.04));border:1px solid rgba(14,165,233,.2);border-radius:13px;padding:15px;margin-bottom:12px}
+.weather-card.show{display:flex;align-items:center;justify-content:space-between}
+.wc-left .wc-city{font-family:var(--mono);font-size:.5rem;color:var(--t3);letter-spacing:2px;margin-bottom:4px}
+.wc-left .wc-temp{font-family:var(--head);font-size:2.4rem;font-weight:900;color:var(--cyan);line-height:1}
+.wc-left .wc-desc{font-size:.76rem;color:var(--t2);margin-top:3px}
+.wc-right{text-align:right}
+.wc-right .wc-ico{font-size:2.2rem;margin-bottom:4px}
+.wc-right .wc-hum{font-family:var(--mono);font-size:.58rem;color:var(--t3)}
+.wc-right .wc-tag{font-family:var(--mono);font-size:.46rem;color:var(--cyan);letter-spacing:1px;margin-top:3px}
+
+.chart-box{background:var(--bg1);border:1px solid var(--bdr);border-radius:13px;padding:15px;margin-bottom:12px}
+.cb-title{font-family:var(--mono);font-size:.58rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.bars{display:flex;align-items:flex-end;gap:2px;height:72px}
+.bar{flex:1;border-radius:2px 2px 0 0;min-width:0;transition:height .4s ease,background .3s}
+.bar-s{background:rgba(79,142,247,.28)}.bar-w{background:rgba(245,158,11,.45)}.bar-a{background:rgba(239,68,68,.55)}.bar-l{background:var(--cyan)}
+.dev-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:13px;padding:15px;margin-bottom:12px}
+.dc-title{font-family:var(--mono);font-size:.58rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.dc-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.dc-row:last-child{border:none;padding-bottom:0}
+.dc-key{font-size:.82rem;color:var(--t2)}
+.dc-val{font-family:var(--mono);font-size:.7rem;color:var(--text)}
+.dc-val.g{color:var(--green)}.dc-val.a{color:var(--amber)}.dc-val.r{color:var(--red)}
+
+/* ══ ALERTS ═══════════════════════════════════════ */
+.alert-list{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.alert-item{background:var(--bg1);border:1px solid var(--bdr);border-radius:13px;padding:14px;display:flex;align-items:center;gap:12px}
+.ai-icon{width:36px;height:36px;border-radius:50%;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.ai-body{flex:1}
+.ai-title{font-size:.85rem;font-weight:600;margin-bottom:3px}
+.ai-time{font-family:var(--mono);font-size:.6rem;color:var(--t3)}
+.ai-badge{font-family:var(--mono);font-size:.58rem;padding:3px 9px;border-radius:20px}
+.ab-call{color:var(--amber);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)}
+.ab-sms{color:var(--cyan);background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2)}
+.ab-alarm{color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--t3)}
+.es-icon{font-size:2.4rem;margin-bottom:12px}
+
+/* ══ SETTINGS ═════════════════════════════════════ */
+.settings-section{background:var(--bg1);border:1px solid var(--bdr);border-radius:13px;overflow:hidden;margin-bottom:12px}
+.ss-head{padding:12px 16px;font-family:var(--mono);font-size:.58rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--bdr)}
+.ss-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bdr);gap:12px}
+.ss-row:last-child{border:none}
+.ss-info label{display:block;font-size:.85rem;font-weight:500;margin-bottom:2px}
+.ss-info p{font-size:.75rem;color:var(--t2)}
+.ss-input{background:var(--bg2);border:1px solid var(--bdr2);color:var(--text);padding:8px 12px;border-radius:8px;font-family:var(--ui);font-size:.85rem;outline:none;transition:border-color .2s;width:155px}
+.ss-input:focus{border-color:var(--cyan)}
+.ss-btn{padding:8px 16px;border:none;border-radius:8px;background:var(--cyan);color:#fff;font-weight:600;font-size:.82rem;cursor:pointer;transition:opacity .2s;white-space:nowrap}
+.ss-btn:hover{opacity:.85}
+.ss-btn.danger{background:none;border:1px solid rgba(239,68,68,.3);color:var(--red)}
+.ss-btn.danger:hover{background:rgba(239,68,68,.08)}
+.ss-pro-lock{font-family:var(--mono);font-size:.54rem;color:var(--amber);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);padding:3px 8px;border-radius:20px;white-space:nowrap}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{position:absolute;opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;background:var(--bg3);border-radius:12px;border:1px solid var(--bdr2);cursor:pointer;transition:all .25s}
+.toggle input:checked+.toggle-track{background:var(--cyan);border-color:var(--cyan)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .25s;pointer-events:none}
+.toggle input:checked~.toggle-thumb{transform:translateX(20px)}
+
+/* ══ BOTTOM NAV ═══════════════════════════════════ */
+.bottom-nav{background:rgba(7,9,13,.97);backdrop-filter:blur(20px);border-top:1px solid var(--bdr);display:flex;align-items:stretch;padding-bottom:var(--sab);padding-left:var(--sal);padding-right:var(--sar);flex-shrink:0}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;gap:4px;cursor:pointer;font-family:var(--mono);font-size:.54rem;letter-spacing:1px;color:var(--t3);text-transform:uppercase;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative}
+.nav-btn.active{color:var(--cyan)}
+.nav-btn .ni{font-size:1.15rem;transition:transform .2s}
+.nav-btn.active .ni{transform:scale(1.1)}
+.alert-pip{position:absolute;top:8px;right:calc(50% - 14px);width:6px;height:6px;border-radius:50%;background:var(--red);display:none}
+
+/* Misc */
+.ios-hint{display:none;background:var(--bg2);border:1px solid rgba(14,165,233,.2);border-radius:12px;padding:12px 14px;margin-bottom:12px;align-items:center;gap:10px;font-size:.8rem}
+.ios-hint.show{display:flex}
+.ih-ico{font-size:1.3rem;flex-shrink:0}
+.ih-txt{flex:1;color:var(--t2)}
+.ih-txt strong{color:var(--text);display:block;margin-bottom:1px}
+.ih-close{color:var(--t3);cursor:pointer;padding:4px;font-size:1rem}
+.toast{position:fixed;bottom:calc(var(--sab) + 68px);left:16px;right:16px;background:var(--bg2);border:1px solid var(--bdr2);border-left:3px solid var(--cyan);border-radius:10px;padding:11px 16px;font-size:.82rem;z-index:500;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;text-align:center}
+.toast.show{transform:translateY(0);opacity:1}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section-title{font-family:var(--mono);font-size:.6rem;color:var(--t3);letter-spacing:2px;text-transform:uppercase;padding:4px 0 10px}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+
+<!-- ════ AUTH ════ -->
+<div id="authScreen">
+  <div class="auth-wrap">
+    <div class="auth-logomark">
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="56" height="56" rx="14" fill="#0c0f15"/>
+        <circle cx="28" cy="28" r="16" stroke="#0ea5e9" stroke-width="2"/>
+        <text x="28" y="33" text-anchor="middle" font-family="monospace" font-size="10" font-weight="bold" fill="#0ea5e9">CLM</text>
+      </svg>
+      <h1>CLIMAS</h1>
+      <p>Smart Home Safety Monitor</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tabSignIn" onclick="setAuthMode('login')">Sign In</div>
+        <div class="auth-tab" id="tabSignUp" onclick="setAuthMode('register')">Create Account</div>
+      </div>
+      <div class="auth-body">
+        <div id="fieldName" class="field" style="display:none">
+          <label>Full Name</label>
+          <input type="text" id="inputName" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="inputEmail" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="inputPass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="auth-submit" id="authBtn" onclick="handleAuth()">Sign In</button>
+        <div class="auth-error" id="authErr"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ APP SHELL ════ -->
+<div id="appShell">
+  <header class="app-header">
+    <div class="ah-left">
+      <div class="ah-dot off" id="ahDot"></div>
+      <span class="ah-logo">CLIMAS</span>
+    </div>
+    <div class="ah-right">
+      <span class="ah-time" id="ahTime"></span>
+      <span class="ah-plan plan-none" id="ahPlan">NONE</span>
+    </div>
+  </header>
+
+  <div class="app-scroll">
+    <div class="page-pad">
+
+      <!-- ── HOME PAGE ── -->
+      <div class="page active" id="page-home">
+        <div class="ios-hint" id="iosHint">
+          <span class="ih-ico">📲</span>
+          <div class="ih-txt"><strong>Add to Home Screen</strong>Tap Share → "Add to Home Screen"</div>
+          <span class="ih-close" onclick="this.parentElement.classList.remove('show')">✕</span>
+        </div>
+        <div id="noDevice" class="no-device-msg" style="display:none">
+          <div class="big">📡</div>
+          <p>No device linked yet.<br><strong>Go to Subscribe tab</strong> to activate your CLIMAS.</p>
+        </div>
+        <div id="liveDash">
+          <div class="alarm-banner" id="alarmBanner">
+            <span class="ab-ico">🚨</span>
+            <div class="ab-txt">
+              <h3>GAS ALARM</h3>
+              <p>Check your home immediately</p>
+              <div class="ab-gas" id="abGasVal">—</div>
+            </div>
+          </div>
+          <div class="metrics">
+            <div class="metric" id="mCardTemp">
+              <div class="m-top"><span class="m-lbl">Temp</span><span class="m-ico">🌡️</span></div>
+              <div class="m-val" id="mTemp">—<span class="m-unit">°C</span></div>
+              <div class="m-sub"><div class="dot dx" id="dTemp"></div><span id="lTemp">—</span></div>
+            </div>
+            <div class="metric" id="mCardHum">
+              <div class="m-top"><span class="m-lbl">Humidity</span><span class="m-ico">💧</span></div>
+              <div class="m-val" id="mHum">—<span class="m-unit">%</span></div>
+              <div class="m-sub"><div class="dot dx" id="dHum"></div><span id="lHum">—</span></div>
+            </div>
+          </div>
+          <div class="gas-full" id="gasCard">
+            <div class="gf-top">
+              <span class="gf-lbl">💨 Gas Level</span>
+              <span class="g-badge g-safe" id="gBadge">SAFE</span>
+            </div>
+            <div class="gf-val" id="mGas">—</div>
+            <div class="gf-bar-bg"><div class="gf-bar" id="gBar" style="width:0;background:var(--cyan)"></div></div>
+            <div class="gf-hint">Threshold: 400 / 1023</div>
+          </div>
+          <!-- Weather widget — shown only for v3 Pro -->
+          <div class="weather-card" id="weatherCard">
+            <div class="wc-left">
+              <div class="wc-city" id="wcCity">—</div>
+              <div class="wc-temp" id="wcTemp">—</div>
+              <div class="wc-desc" id="wcDesc">—</div>
+            </div>
+            <div class="wc-right">
+              <div class="wc-ico" id="wcIco">⛅</div>
+              <div class="wc-hum" id="wcHum">—</div>
+              <div class="wc-tag">OUTDOOR</div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <div class="cb-title">Gas History</div>
+            <div class="bars" id="gasChart"></div>
+          </div>
+          <div class="dev-card">
+            <div class="dc-title">Device Info</div>
+            <div class="dc-row"><span class="dc-key">Connection</span><span class="dc-val" id="dcConn">—</span></div>
+            <div class="dc-row"><span class="dc-key">Device ID</span><span class="dc-val" id="dcId" style="font-size:.6rem">—</span></div>
+            <div class="dc-row"><span class="dc-key">Model</span><span class="dc-val" id="dcModel">—</span></div>
+            <div class="dc-row"><span class="dc-key">Last update</span><span class="dc-val" id="dcLast">—</span></div>
+            <div class="dc-row"><span class="dc-key">Readings</span><span class="dc-val g" id="dcCount">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUBSCRIBE PAGE ── -->
+      <div class="page" id="page-subscribe">
+        <div class="subscribe-hero">
+          <div class="sh-badge">CHOOSE A PLAN</div>
+          <div class="sh-title">Protect Your Home.</div>
+          <div class="sh-sub">Device is free. Pick your model and plan below.</div>
+        </div>
+
+        <!-- Step 1: pick device model -->
+        <div class="section-title">Step 1 — Select Your Device</div>
+        <div class="model-picker">
+          <div class="mp-btn active" id="mpV2" onclick="pickModel('v2')">
+            <div class="mp-v">MODEL</div>
+            <div class="mp-n">v2</div>
+            <div class="mp-d">Cloud only</div>
+          </div>
+          <div class="mp-btn" id="mpV3" onclick="pickModel('v3')">
+            <div class="mp-v">MODEL</div>
+            <div class="mp-n">v3</div>
+            <div class="mp-d">OLED + Weather</div>
+          </div>
+        </div>
+
+        <!-- Step 2: plan cards — prices update based on model -->
+        <div class="section-title">Step 2 — Choose Plan</div>
+        <div class="plan-cards">
+          <div class="plan-card" onclick="subscribe('basic')">
+            <div class="pc-top">
+              <div class="pc-name">Basic</div>
+              <div class="pc-price">
+                <div class="pc-amount" style="color:var(--cyan)" id="basicPrice">GHS 18<span style="font-size:1rem;color:var(--t3);font-weight:400">/mo</span></div>
+              </div>
+            </div>
+            <div class="pc-features" id="basicFeatures">
+              <!-- populated by JS -->
+            </div>
+            <button class="pc-btn pc-btn-basic">Get Basic →</button>
+          </div>
+          <div class="plan-card recommended" onclick="subscribe('pro')">
+            <div class="pc-top">
+              <div class="pc-name">Pro</div>
+              <div class="pc-price">
+                <div class="pc-amount" style="color:var(--amber)" id="proPrice">GHS 38<span style="font-size:1rem;color:var(--t3);font-weight:400">/mo</span></div>
+              </div>
+            </div>
+            <div class="pc-features" id="proFeatures">
+              <!-- populated by JS -->
+            </div>
+            <button class="pc-btn pc-btn-pro">Get Pro →</button>
+          </div>
+        </div>
+
+        <div class="token-entry">
+          <div class="te-title">Already have a token?</div>
+          <div style="font-size:.78rem;color:var(--t2);margin-bottom:12px;line-height:1.5">Your token is in the email you received after subscribing. It activates automatically when your device first connects.</div>
+          <div class="te-row">
+            <input class="te-input" id="tokenInput" placeholder="CLM-XXXX-XXXX-XXXX" maxlength="18">
+            <button class="te-btn" onclick="activateToken()">Check</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ALERTS PAGE ── -->
+      <div class="page" id="page-alerts">
+        <div class="section-title">Alert History</div>
+        <div class="alert-list" id="alertList">
+          <div class="empty-state"><div class="es-icon">🟢</div><div>No alerts yet</div></div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS PAGE ── -->
+      <div class="page" id="page-settings">
+
+        <div class="settings-section">
+          <div class="ss-head">Account</div>
+          <div class="ss-row">
+            <div class="ss-info"><label>Name</label><p id="setEmail">—</p></div>
+            <input class="ss-input" id="setName" placeholder="Your name">
+          </div>
+          <div class="ss-row">
+            <div class="ss-info"><label></label></div>
+            <button class="ss-btn" onclick="saveSetting('name')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">Alert Phone Number</div>
+          <div class="ss-row">
+            <div class="ss-info">
+              <label>Your Number</label>
+              <p>Receive an SMS when gas is detected</p>
+            </div>
+            <input class="ss-input" id="setPhone" placeholder="0244000000" type="tel">
+          </div>
+          <div class="ss-row">
+            <div class="ss-info"><label></label></div>
+            <button class="ss-btn" onclick="saveSetting('phone')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">Emergency Contact <span class="ss-pro-lock">PRO</span></div>
+          <div class="ss-row">
+            <div class="ss-info">
+              <label>Contact Number</label>
+              <p>Called automatically after 8s of gas alarm</p>
+            </div>
+            <input class="ss-input" id="setEmg" placeholder="0244000000" type="tel">
+          </div>
+          <div class="ss-row">
+            <div class="ss-info"><label></label></div>
+            <button class="ss-btn" onclick="saveSetting('emergencyContact')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">OpenWeather City <span class="ss-pro-lock">v3 PRO</span></div>
+          <div class="ss-row">
+            <div class="ss-info">
+              <label>Your City</label>
+              <p>Live outdoor weather on OLED + dashboard</p>
+            </div>
+            <input class="ss-input" id="setCity" placeholder="Kumasi">
+          </div>
+          <div class="ss-row">
+            <div class="ss-info"><label></label></div>
+            <button class="ss-btn" onclick="saveSetting('city')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">Device Model</div>
+          <div class="ss-row">
+            <div class="ss-info">
+              <label>Model</label>
+              <p>v2 = cloud only · v3 = OLED + weather</p>
+            </div>
+            <select class="ss-input" id="setModel">
+              <option value="none">Select…</option>
+              <option value="v2">CLIMAS v2</option>
+              <option value="v3">CLIMAS v3</option>
+            </select>
+          </div>
+          <div class="ss-row">
+            <div class="ss-info"><label></label></div>
+            <button class="ss-btn" onclick="saveSetting('deviceModel')">Save</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">Notifications</div>
+          <div class="ss-row">
+            <div class="ss-info"><label>Push Alerts</label><p>Alarm notifications on this device</p></div>
+            <label class="toggle">
+              <input type="checkbox" id="notifToggle" onchange="togglePush()">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">Subscription</div>
+          <div class="ss-row">
+            <div class="ss-info"><label>Current Plan</label><p id="setPlan">—</p></div>
+            <span class="ah-plan" id="setPlanBadge">—</span>
+          </div>
+          <div class="ss-row">
+            <div class="ss-info"><label>Upgrade or Change</label><p>Manage your plan</p></div>
+            <button class="ss-btn" onclick="showPage('subscribe')">Plans →</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="ss-head">Account</div>
+          <div class="ss-row">
+            <div class="ss-info"><label>Sign Out</label><p>Log out of this device</p></div>
+            <button class="ss-btn danger" onclick="logout()">Sign Out</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-btn active" id="nb-home" onclick="showPage('home')"><span class="ni">🏠</span>Home</div>
+    <div class="nav-btn" id="nb-subscribe" onclick="showPage('subscribe')"><span class="ni">⚡</span>Plans</div>
+    <div class="nav-btn" id="nb-alerts" onclick="showPage('alerts')"><span class="ni">🔔</span>Alerts<span class="alert-pip" id="alertPip"></span></div>
+    <div class="nav-btn" id="nb-settings" onclick="showPage('settings')"><span class="ni">⚙️</span>Settings</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+ *  CONFIG & STATE
+ * ════════════════════════════════════════════════ */
+const GAS_THRESHOLD = 400;
+let authToken   = localStorage.getItem("climas_token");
+let userData    = null;
+let deviceData  = null;
+let socket      = null;
+let gasHistory  = Array(40).fill(0);
+let readCount   = 0;
+let authMode    = "login";
+let pushEnabled = false;
+let selectedModel = "v2";  // for subscribe page
+
+const PRICES = {
+  v2: { basic: "GHS 18", pro: "GHS 38" },
+  v3: { basic: "GHS 28", pro: "GHS 48" },
+};
+
+const FEATURES = {
+  v2: {
+    basic: ["Web dashboard","Push notifications","Gas alarm"],
+    basicOff: ["OpenWeather","Emergency call"],
+    pro:   ["Web dashboard","Push notifications","Gas alarm","OpenWeather","Auto emergency call"],
+    proOff: [],
+  },
+  v3: {
+    basic: ["Web dashboard","Push notifications","OLED display","Gas alarm"],
+    basicOff: ["OpenWeather","Emergency call"],
+    pro:   ["Web dashboard","Push notifications","OLED display","Gas alarm","OpenWeather (on OLED + app)","Auto emergency call"],
+    proOff: [],
+  },
+};
+
+/* ════════════════════════════════════════════════
+ *  BOOT
+ * ════════════════════════════════════════════════ */
+window.addEventListener("DOMContentLoaded", () => {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS && !window.navigator.standalone) document.getElementById("iosHint").classList.add("show");
+  setInterval(() => {
+    document.getElementById("ahTime").textContent =
+      new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  }, 1000);
+  if (authToken) { showApp(); loadUserData(); }
+  updatePlanCards();
+});
+
+/* ════════════════════════════════════════════════
+ *  AUTH
+ * ════════════════════════════════════════════════ */
+function setAuthMode(mode) {
+  authMode = mode;
+  const isReg = mode === "register";
+  document.getElementById("tabSignIn").classList.toggle("active", !isReg);
+  document.getElementById("tabSignUp").classList.toggle("active", isReg);
+  document.getElementById("fieldName").style.display = isReg ? "block" : "none";
+  document.getElementById("authBtn").textContent = isReg ? "Create Account" : "Sign In";
+  document.getElementById("authErr").classList.remove("show");
+}
+
+async function handleAuth() {
+  const email = document.getElementById("inputEmail").value.trim();
+  const pass  = document.getElementById("inputPass").value;
+  const name  = document.getElementById("inputName").value.trim();
+  const btn   = document.getElementById("authBtn");
+  document.getElementById("authErr").classList.remove("show");
+  if (!email || !pass) { showAuthErr("Please fill in all fields"); return; }
+  if (authMode === "register" && !name) { showAuthErr("Please enter your name"); return; }
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>${authMode === "register" ? "Creating..." : "Signing in..."}`;
+  try {
+    const body = authMode === "register" ? { name, email, password: pass } : { email, password: pass };
+    const r = await fetch("/auth/" + authMode, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (!r.ok) { showAuthErr(data.error || "Something went wrong"); return; }
+    authToken = data.token; userData = data.user;
+    localStorage.setItem("climas_token", authToken);
+    showApp(); loadUserData();
+  } catch { showAuthErr("Can't reach server. Check your connection."); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = authMode === "register" ? "Create Account" : "Sign In";
+  }
+}
+function showAuthErr(msg) {
+  const el = document.getElementById("authErr");
+  el.textContent = msg; el.classList.add("show");
+}
+function logout() {
+  authToken = null; userData = null;
+  localStorage.removeItem("climas_token");
+  if (socket) socket.disconnect();
+  document.getElementById("appShell").classList.remove("visible");
+  document.getElementById("authScreen").style.display = "flex";
+}
+
+/* ════════════════════════════════════════════════
+ *  APP INIT
+ * ════════════════════════════════════════════════ */
+function showApp() {
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("appShell").classList.add("visible");
+}
+
+async function loadUserData() {
+  try {
+    const r = await fetch("/auth/me", { headers: { Authorization: "Bearer " + authToken } });
+    userData = await r.json();
+    updateUserUI();
+    loadDevices();
+    loadAlerts();
+    connectSocket();
+  } catch {}
+}
+
+function updateUserUI() {
+  if (!userData) return;
+  const plan  = userData.plan || "none";
+  const model = userData.deviceModel || "none";
+  const badge = document.getElementById("ahPlan");
+  badge.textContent = plan.toUpperCase();
+  badge.className   = `ah-plan plan-${plan}`;
+  document.getElementById("setName").value  = userData.name || "";
+  document.getElementById("setEmail").textContent = userData.email || "—";
+  document.getElementById("setPhone").value = userData.phone || "";
+  document.getElementById("setEmg").value   = userData.emergencyContact || "";
+  document.getElementById("setCity").value  = userData.city || "Kumasi";
+  document.getElementById("setModel").value = model;
+
+  const planLabel = {
+    none:  "No active subscription",
+    basic: model === "v3" ? "Basic — GHS 28/mo" : "Basic — GHS 18/mo",
+    pro:   model === "v3" ? "Pro — GHS 48/mo"   : "Pro — GHS 38/mo",
+  }[plan] || "—";
+  document.getElementById("setPlan").textContent = planLabel;
+  document.getElementById("setPlanBadge").textContent = plan.toUpperCase();
+  document.getElementById("setPlanBadge").className = `ah-plan plan-${plan}`;
+
+  // Set model picker default on subscribe page
+  if (model !== "none") {
+    selectedModel = model;
+    updatePlanCards();
+  }
+}
+
+/* ════════════════════════════════════════════════
+ *  SUBSCRIBE PAGE
+ * ════════════════════════════════════════════════ */
+function pickModel(m) {
+  selectedModel = m;
+  document.getElementById("mpV2").classList.toggle("active", m === "v2");
+  document.getElementById("mpV3").classList.toggle("active", m === "v3");
+  updatePlanCards();
+}
+
+function updatePlanCards() {
+  const m = selectedModel;
+  const p = PRICES[m] || PRICES.v2;
+  const f = FEATURES[m] || FEATURES.v2;
+
+  document.getElementById("basicPrice").innerHTML =
+    `${p.basic}<span style="font-size:1rem;color:var(--t3);font-weight:400">/mo</span>`;
+  document.getElementById("proPrice").innerHTML =
+    `${p.pro}<span style="font-size:1rem;color:var(--t3);font-weight:400">/mo</span>`;
+
+  document.getElementById("basicFeatures").innerHTML =
+    f.basic.map(x => `<div class="pc-feat"><span class="check">✓</span> ${x}</div>`).join("") +
+    f.basicOff.map(x => `<div class="pc-feat"><span class="cross">—</span> ${x}</div>`).join("");
+
+  document.getElementById("proFeatures").innerHTML =
+    f.pro.map(x => `<div class="pc-feat"><span class="check">✓</span> ${x}</div>`).join("") +
+    f.proOff.map(x => `<div class="pc-feat"><span class="cross">—</span> ${x}</div>`).join("");
+}
+
+async function subscribe(plan) {
+  if (!authToken) { toast("Sign in first"); return; }
+  try {
+    const r = await fetch("/billing/initialize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
+      body: JSON.stringify({ plan, deviceModel: selectedModel })
+    });
+    const d = await r.json();
+    if (d.url) window.location.href = d.url;
+    else toast("Could not start payment: " + (d.error || "unknown"));
+  } catch { toast("Payment unavailable — check server config"); }
+}
+
+function activateToken() {
+  const t = document.getElementById("tokenInput").value.trim();
+  if (!t) { toast("Enter your token"); return; }
+  toast("Token is activated automatically when your device first connects to the server.");
+}
+
+/* ════════════════════════════════════════════════
+ *  DEVICES
+ * ════════════════════════════════════════════════ */
+async function loadDevices() {
+  try {
+    const r = await fetch("/api/devices", { headers: { Authorization: "Bearer " + authToken } });
+    const devs = await r.json();
+    if (devs.length) {
+      deviceData = devs[0];
+      document.getElementById("noDevice").style.display = "none";
+      document.getElementById("liveDash").style.display = "block";
+      document.getElementById("dcId").textContent    = deviceData.deviceId || "—";
+      document.getElementById("dcModel").textContent = (userData?.deviceModel || "v2").toUpperCase();
+      if (socket) socket.emit("watch", deviceData.deviceId);
+      const r2 = await fetch(`/api/devices/${deviceData.deviceId}/latest`,
+        { headers: { Authorization: "Bearer " + authToken } });
+      const latest = await r2.json();
+      if (latest.temp) updateMetrics(latest);
+    } else {
+      document.getElementById("noDevice").style.display = "block";
+      document.getElementById("liveDash").style.display = "none";
+    }
+  } catch {
+    document.getElementById("noDevice").style.display = "block";
+    document.getElementById("liveDash").style.display = "none";
+  }
+}
+
+/* ════════════════════════════════════════════════
+ *  WEBSOCKET
+ * ════════════════════════════════════════════════ */
+function connectSocket() {
+  socket = io({ auth: { token: authToken } });
+  socket.on("connect", () => {
+    setConn(true);
+    if (deviceData) socket.emit("watch", deviceData.deviceId);
+  });
+  socket.on("disconnect", () => setConn(false));
+  socket.on("reading", r => {
+    gasHistory.push(r.gas); gasHistory.shift();
+    readCount++;
+    updateMetrics(r);
+    renderChart();
+    document.getElementById("dcLast").textContent =
+      new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+    document.getElementById("dcCount").textContent = readCount;
+  });
+  socket.on("call_triggered", () => toast("📞 Emergency call placed!"));
+}
+
+function setConn(on) {
+  document.getElementById("ahDot").className = "ah-dot " + (on ? "live" : "off");
+  document.getElementById("dcConn").textContent = on ? "Connected" : "Offline";
+  document.getElementById("dcConn").className   = "dc-val " + (on ? "g" : "r");
+}
+
+/* ════════════════════════════════════════════════
+ *  METRICS
+ * ════════════════════════════════════════════════ */
+function updateMetrics(r) {
+  document.getElementById("mTemp").innerHTML = r.temp.toFixed(1) + '<span class="m-unit">°C</span>';
+  document.getElementById("mHum").innerHTML  = Math.round(r.humidity) + '<span class="m-unit">%</span>';
+  document.getElementById("mGas").textContent = r.gas;
+
+  const t = r.temp > 40 ? ["dr","Too hot"] : r.temp > 35 ? ["da","Warm"] : ["dg","Normal"];
+  const h = r.humidity > 85 ? ["da","High"] : r.humidity < 30 ? ["da","Low"] : ["dg","Good"];
+  setDot("dTemp","lTemp",t); setDot("dHum","lHum",h);
+
+  const pct = Math.min(100,(r.gas/1023)*100);
+  const bar = document.getElementById("gBar");
+  bar.style.width = pct + "%";
+  bar.style.background = r.alarm ? "var(--red)" : r.gas > GAS_THRESHOLD*.75 ? "var(--amber)" : "var(--cyan)";
+
+  const b = document.getElementById("gBadge");
+  if (r.alarm) { b.textContent="DANGER"; b.className="g-badge g-alarm"; }
+  else if (r.gas > GAS_THRESHOLD*.75) { b.textContent="ELEVATED"; b.className="g-badge g-warn"; }
+  else { b.textContent="SAFE"; b.className="g-badge g-safe"; }
+
+  document.getElementById("gasCard").classList.toggle("alarm-card", r.alarm);
+
+  const banner = document.getElementById("alarmBanner");
+  if (r.alarm) {
+    banner.classList.add("show");
+    document.getElementById("abGasVal").textContent = "Level: " + r.gas + " / 1023";
+    document.title = "🚨 GAS ALARM";
+    document.getElementById("alertPip").style.display = "block";
+    loadAlerts();
+  } else {
+    banner.classList.remove("show");
+    document.title = "CLIMAS";
+  }
+
+  // Weather widget — v3 Pro only
+  const isV3Pro = userData?.deviceModel === "v3" && userData?.plan === "pro";
+  const wc = document.getElementById("weatherCard");
+  if (isV3Pro && r.weather) {
+    wc.classList.add("show");
+    document.getElementById("wcCity").textContent = (r.weather.city || "").toUpperCase();
+    document.getElementById("wcTemp").textContent = r.weather.temp + "°C";
+    document.getElementById("wcDesc").textContent =
+      r.weather.description + (r.weather.feelsLike ? ` · Feels ${r.weather.feelsLike}°C` : "");
+    document.getElementById("wcHum").textContent = "Humidity " + r.weather.humidity + "%";
+    const icons = { Clear:"☀️", Clouds:"⛅", Rain:"🌧️", Drizzle:"🌦️", Thunderstorm:"⛈️", Snow:"❄️", Mist:"🌫️", Haze:"🌫️" };
+    document.getElementById("wcIco").textContent = icons[r.weather.icon] || "🌡️";
+  } else {
+    wc.classList.remove("show");
+  }
+}
+
+function setDot(dId, lId, [cls, txt]) {
+  document.getElementById(dId).className = "dot " + cls;
+  document.getElementById(lId).textContent = txt;
+}
+
+/* ════════════════════════════════════════════════
+ *  CHART
+ * ════════════════════════════════════════════════ */
+function renderChart() {
+  const c = document.getElementById("gasChart"); c.innerHTML = "";
+  const max = Math.max(...gasHistory, GAS_THRESHOLD * 1.2, 10);
+  gasHistory.forEach((v, i) => {
+    const b = document.createElement("div");
+    const latest = i === gasHistory.length - 1;
+    b.className = "bar " + (v >= GAS_THRESHOLD ? "bar-a" : v > GAS_THRESHOLD*.75 ? "bar-w" : latest ? "bar-l" : "bar-s");
+    b.style.height = Math.max(2, (v/max)*100) + "%";
+    c.appendChild(b);
+  });
+}
+
+/* ════════════════════════════════════════════════
+ *  ALERTS
+ * ════════════════════════════════════════════════ */
+async function loadAlerts() {
+  try {
+    const r = await fetch("/api/alerts", { headers: { Authorization: "Bearer " + authToken } });
+    const data = await r.json();
+    const el = document.getElementById("alertList");
+    if (!data.length) {
+      el.innerHTML = '<div class="empty-state"><div class="es-icon">🟢</div><div>No alerts yet. Your home is safe.</div></div>';
+      return;
+    }
+    el.innerHTML = data.map(a => `
+      <div class="alert-item">
+        <div class="ai-icon">🚨</div>
+        <div class="ai-body">
+          <div class="ai-title">Gas Alarm — Level ${a.gasLevel}</div>
+          <div class="ai-time">${new Date(a.ts).toLocaleString()}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          ${a.smsSent ? '<span class="ai-badge ab-sms">📱 SMS</span>' : ""}
+          ${a.callMade ? '<span class="ai-badge ab-call">📞 CALLED</span>' : '<span class="ai-badge ab-alarm">ALARM</span>'}
+        </div>
+      </div>
+    `).join("");
+  } catch {}
+}
+
+/* ════════════════════════════════════════════════
+ *  SETTINGS
+ * ════════════════════════════════════════════════ */
+async function saveSetting(field) {
+  const vals = {
+    name:             document.getElementById("setName").value.trim(),
+    phone:            document.getElementById("setPhone").value.trim(),
+    emergencyContact: document.getElementById("setEmg").value.trim(),
+    city:             document.getElementById("setCity").value.trim(),
+    deviceModel:      document.getElementById("setModel").value,
+  };
+  const v = vals[field];
+  if (!v || v === "none") { toast("Enter a value first"); return; }
+
+  if (field === "emergencyContact" && userData?.plan !== "pro") {
+    toast("Pro plan required for emergency calls"); return;
+  }
+
+  await fetch("/auth/me", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
+    body: JSON.stringify({ [field]: v })
+  });
+
+  if (userData) userData[field] = v;
+  if (field === "deviceModel") { selectedModel = v; updatePlanCards(); updateUserUI(); }
+  if (field === "city") weatherCache_clear();
+  toast(`${field === "name" ? "Name" : field === "phone" ? "Phone number" : field === "emergencyContact" ? "Emergency contact" : field === "city" ? "City" : "Device model"} saved ✓`);
+}
+function weatherCache_clear() {} // server handles cache; just toast
+
+/* ════════════════════════════════════════════════
+ *  PUSH NOTIFICATIONS
+ * ════════════════════════════════════════════════ */
+async function togglePush() {
+  const toggle = document.getElementById("notifToggle");
+  if (!pushEnabled) {
+    if (!("Notification" in window)) { toast("Notifications not supported"); toggle.checked = false; return; }
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { toast("Notification permission denied"); toggle.checked = false; return; }
+    try {
+      const kr = await fetch("/api/vapid-key");
+      const { key } = await kr.json();
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true, applicationServerKey: urlB64ToUint8(key)
+      });
+      await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
+        body: JSON.stringify(sub)
+      });
+      pushEnabled = true;
+      toast("Push notifications enabled ✓");
+    } catch (e) { toast("Failed: " + e.message); toggle.checked = false; }
+  } else {
+    pushEnabled = false; toggle.checked = false;
+    toast("Push notifications disabled");
+  }
+}
+
+function urlB64ToUint8(b64) {
+  const pad = "=".repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64 + pad).replace(/-/g,"+").replace(/_/g,"/"));
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+/* ════════════════════════════════════════════════
+ *  NAVIGATION
+ * ════════════════════════════════════════════════ */
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(n => n.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  document.getElementById("nb-"   + name)?.classList.add("active");
+  document.querySelector(".app-scroll").scrollTop = 0;
+  if (name === "alerts") { loadAlerts(); document.getElementById("alertPip").style.display = "none"; }
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3200);
+}
+
+/* init */
+renderChart();
+const params = new URLSearchParams(location.search);
+if (params.get("payment") === "success") {
+  toast("🎉 Subscription active! Check your email for your activation token.");
+  loadUserData();
+  history.replaceState({}, "", "/");
+}
+if (params.get("payment") === "failed") { toast("Payment not completed."); history.replaceState({}, "", "/"); }
+</script>
+</body>
+</html>
